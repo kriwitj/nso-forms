@@ -1,32 +1,30 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireUser } from "@/lib/auth";
 
 export async function POST(req: Request, { params }: { params: Promise<{ formId: string }> }) {
+  const auth = await requireUser();
+  if (auth.error) return auth.error;
+
   const { formId } = await params;
   const body = await req.json();
   const answers = body?.answers ?? {};
 
-  const questions = await prisma.question.findMany({
-    where: { formId },
-    orderBy: { order: "asc" },
-  });
-
-  const requiredMissing = questions.filter(
-    (q) => q.required && !String(answers[q.id] ?? "").trim()
-  );
-  if (requiredMissing.length > 0) {
-    return NextResponse.json({ error: "missing_required" }, { status: 400 });
+  const form = await prisma.form.findUnique({ where: { id: formId } });
+  if (!form) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  const now = new Date();
+  if (!form.isActive || (form.startAt && now < form.startAt) || (form.endAt && now > form.endAt)) {
+    return NextResponse.json({ error: "form_inactive" }, { status: 400 });
   }
+
+  const questions = await prisma.question.findMany({ where: { formId }, orderBy: { order: "asc" } });
+  const requiredMissing = questions.filter((q) => q.required && !String(answers[q.id] ?? "").trim());
+  if (requiredMissing.length > 0) return NextResponse.json({ error: "missing_required" }, { status: 400 });
 
   const submission = await prisma.submission.create({
     data: {
       formId,
-      answers: {
-        create: questions.map((q) => ({
-          questionId: q.id,
-          value: String(answers[q.id] ?? ""),
-        })),
-      },
+      answers: { create: questions.map((q) => ({ questionId: q.id, value: String(answers[q.id] ?? "") })) },
     },
     include: { answers: true },
   });

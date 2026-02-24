@@ -1,28 +1,28 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireUser } from "@/lib/auth";
 
 export async function GET() {
-  let form = await prisma.form.findFirst({ orderBy: { createdAt: "asc" } });
-  if (!form) {
-    form = await prisma.form.create({
-      data: { title: "แบบฟอร์มใหม่", description: "" },
-    });
-  }
-  return NextResponse.json(form);
+  const auth = await requireUser();
+  if (auth.error) return auth.error;
+
+  const where = auth.user.role === "ADMIN" ? {} : { ownerId: auth.user.id };
+  const forms = await prisma.form.findMany({ where, orderBy: { createdAt: "desc" } });
+  return NextResponse.json(forms);
 }
 
-export async function PATCH(req: Request) {
+export async function POST(req: Request) {
+  const auth = await requireUser();
+  if (auth.error) return auth.error;
+
   const body = await req.json();
-  let form = await prisma.form.findFirst({ orderBy: { createdAt: "asc" } });
-  if (!form) {
-    form = await prisma.form.create({ data: { title: "แบบฟอร์มใหม่" } });
-  }
-  const updated = await prisma.form.update({
-    where: { id: form.id },
+  const form = await prisma.form.create({
     data: {
-      title: typeof body.title === "string" ? body.title : undefined,
-      description: typeof body.description === "string" ? body.description : undefined,
+      ownerId: auth.user.id,
+      title: body.title || "แบบฟอร์มใหม่",
+      description: body.description || "",
     },
   });
-  return NextResponse.json(updated);
+
+  return NextResponse.json(form);
 }
