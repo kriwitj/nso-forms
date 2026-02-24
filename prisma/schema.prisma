@@ -1,0 +1,59 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Form {
+  id          String     @id @default(cuid())
+  title       String     @default("แบบฟอร์มใหม่")
+  description String     @default("")
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  questions   Question[]
+  submissions Submission[]
+}
+
+model Question {
+  id          String   @id @default(cuid())
+  formId      String
+  text        String   @default("คำถามใหม่")
+  type        String
+  options     String[] @default([])
+  required    Boolean  @default(false)
+  order       Int
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  form        Form     @relation(fields: [formId], references: [id], onDelete: Cascade)
+  answers     Answer[]
+}
+
+model Submission {
+  id        String   @id @default(cuid())
+  formId    String
+  createdAt DateTime @default(now())
+
+  form      Form     @relation(fields: [formId], references: [id], onDelete: Cascade)
+  answers   Answer[]
+}
+
+model Answer {
+  id           String   @id @default(cuid())
+  submissionId String
+  questionId   String
+  value        String   @default("")
+
+  createdAt    DateTime @default(now())
+
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  question     Question   @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([submissionId])
+  @@index([questionId])
+}
