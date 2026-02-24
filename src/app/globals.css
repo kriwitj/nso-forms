@@ -2,5 +2,5 @@
 @tailwind components;
 @tailwind utilities;
 
-* { font-family: 'Sarabun', sans-serif; }
-body { box-sizing: border-box; }
+* { font-family: 'Sarabun', sans-serif; box-sizing: border-box; }
+body { background: linear-gradient(180deg, #eff6ff 0%, #f8fbff 100%); }

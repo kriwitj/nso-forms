@@ -7,13 +7,43 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String
+  passwordHash String
+  role         String    @default("USER")
+  isApproved   Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  forms        Form[]
+  sessions     Session[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
 model Form {
   id          String     @id @default(cuid())
+  ownerId     String
   title       String     @default("แบบฟอร์มใหม่")
   description String     @default("")
+  formData    Json?
+  isActive    Boolean    @default(true)
+  startAt     DateTime?
+  endAt       DateTime?
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
+  owner       User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   questions   Question[]
   submissions Submission[]
 }
