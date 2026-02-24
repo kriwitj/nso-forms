@@ -1,364 +1,291 @@
 "use client";
 
+import Breadcrumbs from "@/components/Breadcrumbs";
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import Toast, { useToast } from "./ui/Toast";
 
-type QuestionType =
-  | "short"
-  | "long"
-  | "multiple"
-  | "checkbox"
-  | "dropdown"
-  | "scale"
-  | "date"
-  | "time";
-
-type Form = { id: string; title: string; description: string };
-type Question = {
+type QuestionType = "short" | "long" | "multiple" | "checkbox" | "dropdown" | "scale" | "date" | "time";
+type Question = { id: string; text: string; type: QuestionType; required: boolean; order: number; options: string[] };
+type Submission = {
   id: string;
-  formId: string;
-  text: string;
-  type: QuestionType;
-  options: string[];
-  required: boolean;
-  order: number;
+  createdAt: string;
+  answers: { id: string; value: string; question: { id: string; text: string; order: number } }[];
 };
 
-export default function FormBuilder() {
-  const { msg, show } = useToast();
-  const [tab, setTab] = useState<"edit" | "preview" | "responses">("edit");
-  const [form, setForm] = useState<Form | null>(null);
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [loading, setLoading] = useState(true);
+type Tab = "edit" | "preview" | "responses";
 
-  const formId = form?.id;
+const QUESTION_TYPES: { value: QuestionType; label: string }[] = [
+  { value: "short", label: "📝 คำตอบสั้น" },
+  { value: "long", label: "📄 คำตอบยาว" },
+  { value: "multiple", label: "⭕ หลายตัวเลือก" },
+  { value: "checkbox", label: "☑️ ช่องทำเครื่องหมาย" },
+  { value: "dropdown", label: "📋 ดรอปดาวน์" },
+  { value: "scale", label: "⭐ มาตราส่วน" },
+  { value: "date", label: "📅 วันที่" },
+  { value: "time", label: "⏰ เวลา" },
+];
+
+export default function FormBuilder({ formId }: { formId: string }) {
+  const [activeTab, setActiveTab] = useState<Tab>("edit");
+  const [showTypeModal, setShowTypeModal] = useState(false);
+  const [title, setTitle] = useState("แบบฟอร์มใหม่");
+  const [description, setDescription] = useState("");
+  const [isActive, setIsActive] = useState(true);
+  const [startAt, setStartAt] = useState("");
+  const [endAt, setEndAt] = useState("");
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [answers, setAnswers] = useState<Record<string, string>>({});
 
   async function load() {
-    setLoading(true);
-    const f = await fetch("/api/forms", { cache: "no-store" }).then((r) => r.json());
-    setForm(f);
-    const full = await fetch(`/api/forms/${f.id}`, { cache: "no-store" }).then((r) => r.json());
-    setQuestions((full.questions ?? []).sort((a: Question, b: Question) => a.order - b.order));
-    setLoading(false);
+    const data = await fetch(`/api/forms/${formId}`, { cache: "no-store" }).then((r) => r.json());
+    setTitle(data.title);
+    setDescription(data.description || "");
+    setIsActive(data.isActive);
+    setStartAt(data.startAt ? data.startAt.slice(0, 16) : "");
+    setEndAt(data.endAt ? data.endAt.slice(0, 16) : "");
+    setQuestions((data.questions || []).sort((a: Question, b: Question) => a.order - b.order));
+  }
+
+  async function loadSubmissions() {
+    const data = await fetch(`/api/forms/${formId}/submissions`, { cache: "no-store" }).then((r) => r.json());
+    setSubmissions(Array.isArray(data) ? data : []);
   }
 
   useEffect(() => {
     void load();
-  }, []);
+    void loadSubmissions();
+  }, [formId]);
 
-  async function patchForm(p: Partial<Form>) {
-    const updated = await fetch("/api/forms", {
+  async function saveMeta() {
+    await fetch(`/api/forms/${formId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(p),
-    }).then((r) => r.json());
-    setForm(updated);
+      body: JSON.stringify({ title, description, isActive, startAt: startAt || null, endAt: endAt || null }),
+    });
   }
 
   async function addQuestion(type: QuestionType) {
-    if (!formId) return;
-    const defaultOptions =
-      type === "multiple" || type === "checkbox" || type === "dropdown"
-        ? ["ตัวเลือก 1", "ตัวเลือก 2", "ตัวเลือก 3"]
-        : [];
-    const q = await fetch(`/api/forms/${formId}/questions`, {
+    const options = ["multiple", "checkbox", "dropdown"].includes(type)
+      ? ["ตัวเลือก 1", "ตัวเลือก 2", "ตัวเลือก 3"]
+      : [];
+    await fetch(`/api/forms/${formId}/questions`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type, text: "คำถามใหม่", options: defaultOptions, required: false }),
-    }).then((r) => r.json());
-    setQuestions((prev) => [...prev, q].sort((a, b) => a.order - b.order));
-    show("เพิ่มคำถามแล้ว");
+      body: JSON.stringify({ type, text: "คำถามใหม่", options }),
+    });
+    setShowTypeModal(false);
+    await load();
   }
 
-  async function updateQuestion(id: string, updates: Partial<Question>) {
-    if (!formId) return;
-    const updated = await fetch(`/api/forms/${formId}/questions/${id}`, {
+  async function updateQuestion(questionId: string, patch: Partial<Question>) {
+    await fetch(`/api/forms/${formId}/questions/${questionId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(updates),
-    }).then((r) => r.json());
-    setQuestions((prev) =>
-      prev.map((q) => (q.id === id ? updated : q)).sort((a, b) => a.order - b.order)
-    );
+      body: JSON.stringify(patch),
+    });
+    await load();
   }
 
-  async function deleteQuestion(id: string) {
-    if (!formId) return;
-    await fetch(`/api/forms/${formId}/questions/${id}`, { method: "DELETE" });
-    setQuestions((prev) => prev.filter((q) => q.id !== id).map((q, i) => ({ ...q, order: i })));
-    show("ลบคำถามแล้ว");
+  async function removeQuestion(questionId: string) {
+    await fetch(`/api/forms/${formId}/questions/${questionId}`, { method: "DELETE" });
+    await load();
   }
 
   async function duplicateQuestion(q: Question) {
-    if (!formId) return;
-    const created = await fetch(`/api/forms/${formId}/questions`, {
+    await fetch(`/api/forms/${formId}/questions`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        type: q.type,
-        text: q.text + " (สำเนา)",
-        options: q.options,
-        required: q.required,
-      }),
-    }).then((r) => r.json());
-    setQuestions((prev) => [...prev, created].sort((a, b) => a.order - b.order));
-    show("คัดลอกคำถามแล้ว");
+      body: JSON.stringify({ type: q.type, text: `${q.text} (สำเนา)`, options: q.options, required: q.required }),
+    });
+    await load();
   }
 
-  const previewUrl = useMemo(() => (formId ? `/f/${formId}` : "#"), [formId]);
-  const responsesUrl = useMemo(() => (formId ? `/f/${formId}/responses` : "#"), [formId]);
+  async function submitPreview() {
+    await fetch(`/api/forms/${formId}/submit`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ answers }),
+    });
+    setAnswers({});
+    await loadSubmissions();
+    setActiveTab("responses");
+  }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-gray-600">
-        <div className="w-10 h-10 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin" />
-        <span className="ml-3">กำลังโหลด...</span>
-      </div>
+  const responseSummary = useMemo(() => {
+    const map = new Map<string, number>();
+    submissions.forEach((s) =>
+      s.answers.forEach((a) => {
+        if (a.value?.trim()) map.set(a.question.text, (map.get(a.question.text) ?? 0) + 1);
+      })
     );
-  }
+    return Array.from(map.entries());
+  }, [submissions]);
+
+  const tabs: { id: Tab; label: string }[] = [
+    { id: "edit", label: "แก้ไขคำถาม" },
+    { id: "preview", label: "ดูตัวอย่าง" },
+    { id: "responses", label: "ดูคำตอบ" },
+  ];
 
   return (
-    <div className="min-h-screen">
-      <header className="bg-white shadow-sm sticky top-0 z-50">
-        <div className="max-w-4xl mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                  />
-                </svg>
-              </div>
-              <h1 className="text-xl font-semibold text-gray-800">{form?.title ?? "แบบฟอร์มใหม่"}</h1>
-            </div>
+    <main className="max-w-4xl mx-auto px-4 py-6">
+      <Breadcrumbs items={[{ label: "หน้าแรก", href: "/" }, { label: "แดชบอร์ด", href: "/dashboard" }, { label: "Form Builder" }]} />
 
+      <header className="bg-white shadow-sm sticky top-16 z-30 rounded-xl mb-4">
+        <div className="px-4 py-3">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <h1 className="text-xl font-semibold text-gray-800">{title}</h1>
             <div className="flex gap-2">
-              <a href={previewUrl} className="px-4 py-2 text-purple-600 hover:bg-purple-50 rounded-lg font-medium transition">
-                👁️ ดูตัวอย่าง
-              </a>
-              <a href={responsesUrl} className="px-4 py-2 text-purple-600 hover:bg-purple-50 rounded-lg font-medium transition">
-                📊 คำตอบ
-              </a>
+              <button onClick={() => setActiveTab("preview")} className="px-3 py-2 text-purple-600 hover:bg-purple-50 rounded-lg">👁️ ดูตัวอย่าง</button>
+              <button onClick={() => setActiveTab("responses")} className="px-3 py-2 text-purple-600 hover:bg-purple-50 rounded-lg">
+                📊 คำตอบ <span className="bg-purple-100 px-2 py-0.5 rounded-full text-sm">{submissions.length}</span>
+              </button>
+              <Link href={`/f/${formId}`} className="px-3 py-2 rounded-lg bg-purple-600 text-white">หน้าแบบฟอร์มจริง</Link>
             </div>
           </div>
 
           <div className="flex gap-6 mt-4 border-b">
-            <button
-              className={`pb-2 font-medium ${tab === "edit" ? "border-b-4 border-purple-600 text-purple-700" : "text-gray-500 hover:text-gray-700"}`}
-              onClick={() => setTab("edit")}
-            >
-              แก้ไขคำถาม
-            </button>
-            <button
-              className={`pb-2 font-medium ${tab === "preview" ? "border-b-4 border-purple-600 text-purple-700" : "text-gray-500 hover:text-gray-700"}`}
-              onClick={() => setTab("preview")}
-            >
-              ดูตัวอย่าง
-            </button>
-            <button
-              className={`pb-2 font-medium ${tab === "responses" ? "border-b-4 border-purple-600 text-purple-700" : "text-gray-500 hover:text-gray-700"}`}
-              onClick={() => setTab("responses")}
-            >
-              ดูคำตอบ
-            </button>
+            {tabs.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setActiveTab(t.id)}
+                className={`pb-2 font-medium ${activeTab === t.id ? "border-b-[3px] border-purple-600 text-purple-700" : "text-gray-500"}`}
+              >
+                {t.label}
+              </button>
+            ))}
           </div>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-6">
-        {tab === "edit" && (
-          <>
-            <div className="bg-white rounded-xl shadow-sm border-t-8 border-purple-600 mb-4 overflow-hidden">
-              <div className="p-6">
-                <input
-                  className="w-full text-2xl font-semibold border-b-2 border-transparent hover:border-gray-200 focus:border-purple-500 outline-none pb-2 transition"
-                  defaultValue={form?.title ?? "แบบฟอร์มใหม่"}
-                  placeholder="ชื่อแบบฟอร์ม"
-                  onBlur={(e) => patchForm({ title: e.target.value })}
-                />
-                <input
-                  className="w-full text-gray-600 border-b-2 border-transparent hover:border-gray-200 focus:border-purple-500 outline-none mt-3 pb-2 transition"
-                  defaultValue={form?.description ?? ""}
-                  placeholder="คำอธิบายแบบฟอร์ม"
-                  onBlur={(e) => patchForm({ description: e.target.value })}
-                />
-              </div>
+      {activeTab === "edit" && (
+        <section>
+          <div className="bg-white rounded-xl shadow-sm border-t-8 border-purple-600 mb-4 overflow-hidden p-6 space-y-3">
+            <input className="w-full text-2xl font-semibold border-b-2 border-transparent hover:border-gray-200 focus:border-purple-500 outline-none pb-2" value={title} onChange={(e) => setTitle(e.target.value)} onBlur={saveMeta} />
+            <input className="w-full text-gray-600 border-b-2 border-transparent hover:border-gray-200 focus:border-purple-500 outline-none pb-2" placeholder="คำอธิบายแบบฟอร์ม" value={description} onChange={(e) => setDescription(e.target.value)} onBlur={saveMeta} />
+            <div className="flex flex-wrap gap-4 items-center pt-2">
+              <label><input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} /> เปิดใช้งาน</label>
+              <label>เริ่ม <input type="datetime-local" value={startAt} onChange={(e) => setStartAt(e.target.value)} className="border p-1 rounded" /></label>
+              <label>สิ้นสุด <input type="datetime-local" value={endAt} onChange={(e) => setEndAt(e.target.value)} className="border p-1 rounded" /></label>
+              <button onClick={saveMeta} className="px-3 py-1 bg-purple-600 text-white rounded">บันทึก</button>
             </div>
+          </div>
 
-            {questions.length === 0 ? (
-              <div className="text-center py-12 text-gray-500 bg-white rounded-xl shadow-sm">
-                <div className="text-6xl mb-4">📝</div>
-                <p className="text-lg">ยังไม่มีคำถาม</p>
-                <p className="text-sm">เพิ่มคำถามเพื่อเริ่มสร้างแบบฟอร์ม</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {questions.map((q, idx) => {
-                  const hasOptions = q.type === "multiple" || q.type === "checkbox" || q.type === "dropdown";
-                  return (
-                    <div key={q.id} className="bg-white rounded-xl shadow-sm overflow-hidden border-l-4 border-purple-600">
-                      <div className="p-5">
-                        <div className="flex items-start gap-4">
-                          <div className="text-gray-400 pt-2 select-none">⋮⋮</div>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-3">
-                              <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded text-sm font-medium">
-                                {idx + 1}
-                              </span>
-                              <input
-                                className="flex-1 text-lg border-b-2 border-transparent hover:border-gray-200 focus:border-purple-500 outline-none pb-1 transition"
-                                defaultValue={q.text}
-                                placeholder="พิมพ์คำถาม"
-                                onBlur={(e) => updateQuestion(q.id, { text: e.target.value })}
-                              />
-                            </div>
+          <div className="space-y-4">
+            {questions.map((q, idx) => (
+              <div key={q.id} className="bg-white rounded-xl shadow-sm overflow-hidden border-l-4 border-purple-600 p-5">
+                <div className="flex items-center gap-3 mb-3">
+                  <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded text-sm font-medium">{idx + 1}</span>
+                  <input className="flex-1 text-lg border-b-2 border-transparent hover:border-gray-200 focus:border-purple-500 outline-none" defaultValue={q.text} onBlur={(e) => updateQuestion(q.id, { text: e.target.value })} />
+                </div>
+                <div className="mb-3">
+                  <select className="px-3 py-2 bg-gray-50 rounded-lg border text-sm" value={q.type} onChange={(e) => updateQuestion(q.id, { type: e.target.value as QuestionType, options: [] })}>
+                    {QUESTION_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+                  </select>
+                </div>
 
-                            <div className="flex items-center gap-2 mb-4">
-                              <select
-                                className="px-3 py-2 bg-gray-50 rounded-lg border text-sm"
-                                value={q.type}
-                                onChange={(e) => updateQuestion(q.id, { type: e.target.value as QuestionType, options: [] })}
-                              >
-                                <option value="short">📝 คำตอบสั้น</option>
-                                <option value="long">📄 คำตอบยาว</option>
-                                <option value="multiple">⭕ หลายตัวเลือก</option>
-                                <option value="checkbox">☑️ ช่องทำเครื่องหมาย</option>
-                                <option value="dropdown">📋 ดรอปดาวน์</option>
-                                <option value="scale">⭐ มาตราส่วน</option>
-                                <option value="date">📅 วันที่</option>
-                                <option value="time">⏰ เวลา</option>
-                              </select>
-                            </div>
-
-                            {hasOptions && (
-                              <div className="space-y-2 mb-4">
-                                {(q.options ?? []).map((opt, i) => (
-                                  <div className="flex items-center gap-2" key={i}>
-                                    <span className="text-gray-400">
-                                      {q.type === "multiple" ? "⭕" : q.type === "checkbox" ? "☐" : "•"}
-                                    </span>
-                                    <input
-                                      className="flex-1 px-3 py-2 border rounded-lg focus:border-purple-500 outline-none"
-                                      defaultValue={opt}
-                                      placeholder={`ตัวเลือก ${i + 1}`}
-                                      onBlur={(e) => {
-                                        const next = [...q.options];
-                                        next[i] = e.target.value;
-                                        updateQuestion(q.id, { options: next });
-                                      }}
-                                    />
-                                    <button
-                                      className="text-gray-400 hover:text-red-500 p-1"
-                                      onClick={() => {
-                                        const next = q.options.filter((_, idx2) => idx2 !== i);
-                                        updateQuestion(q.id, { options: next });
-                                      }}
-                                      title="ลบตัวเลือก"
-                                    >
-                                      ✕
-                                    </button>
-                                  </div>
-                                ))}
-                                <button
-                                  className="text-purple-600 hover:text-purple-800 text-sm font-medium mt-2"
-                                  onClick={() => updateQuestion(q.id, { options: [...q.options, `ตัวเลือก ${q.options.length + 1}`] })}
-                                >
-                                  ＋ เพิ่มตัวเลือก
-                                </button>
-                              </div>
-                            )}
-
-                            <div className="flex items-center justify-between pt-4 border-t mt-4">
-                              <label className="flex items-center gap-2 cursor-pointer">
-                                <input
-                                  type="checkbox"
-                                  className="w-5 h-5 accent-purple-600"
-                                  checked={q.required}
-                                  onChange={(e) => updateQuestion(q.id, { required: e.target.checked })}
-                                />
-                                <span className="text-sm text-gray-600">จำเป็น</span>
-                              </label>
-
-                              <div className="flex items-center gap-2">
-                                <button
-                                  className="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition"
-                                  onClick={() => duplicateQuestion(q)}
-                                  title="คัดลอก"
-                                >
-                                  ⧉
-                                </button>
-                                <button
-                                  className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
-                                  onClick={() => deleteQuestion(q.id)}
-                                  title="ลบ"
-                                >
-                                  🗑️
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
+                {(["multiple", "checkbox", "dropdown"] as QuestionType[]).includes(q.type) && (
+                  <div className="space-y-2 mb-4">
+                    {q.options.map((opt, i) => (
+                      <div key={`${q.id}-${i}`} className="flex items-center gap-2">
+                        <input className="flex-1 px-3 py-2 border rounded-lg" defaultValue={opt} onBlur={(e) => {
+                          const next = [...q.options];
+                          next[i] = e.target.value;
+                          void updateQuestion(q.id, { options: next });
+                        }} />
+                        <button className="text-red-600" onClick={() => {
+                          const next = q.options.filter((_, oi) => oi !== i);
+                          void updateQuestion(q.id, { options: next });
+                        }}>ลบ</button>
                       </div>
-                    </div>
-                  );
-                })}
+                    ))}
+                    <button className="text-purple-600 text-sm" onClick={() => updateQuestion(q.id, { options: [...q.options, `ตัวเลือก ${q.options.length + 1}`] })}>+ เพิ่มตัวเลือก</button>
+                  </div>
+                )}
+
+                <div className="flex justify-between border-t pt-3">
+                  <label><input type="checkbox" checked={q.required} onChange={(e) => updateQuestion(q.id, { required: e.target.checked })} /> จำเป็น</label>
+                  <div className="space-x-2">
+                    <button className="px-2 py-1 rounded bg-purple-50 text-purple-700" onClick={() => duplicateQuestion(q)}>คัดลอก</button>
+                    <button className="px-2 py-1 rounded bg-red-50 text-red-700" onClick={() => removeQuestion(q.id)}>ลบ</button>
+                  </div>
+                </div>
               </div>
-            )}
+            ))}
+          </div>
 
-            <div className="flex justify-center mt-6 gap-2 flex-wrap">
-              <button
-                className="px-6 py-3 bg-white rounded-full shadow-md hover:shadow-lg transition font-medium text-purple-600 border border-purple-200"
-                onClick={() => addQuestion("short")}
-              >
-                ＋ เพิ่มคำถาม (สั้น)
-              </button>
-              <button
-                className="px-6 py-3 bg-white rounded-full shadow-md hover:shadow-lg transition font-medium text-purple-600 border border-purple-200"
-                onClick={() => addQuestion("multiple")}
-              >
-                ＋ เพิ่มคำถาม (ตัวเลือก)
-              </button>
-              <button
-                className="px-6 py-3 bg-white rounded-full shadow-md hover:shadow-lg transition font-medium text-purple-600 border border-purple-200"
-                onClick={() => addQuestion("long")}
-              >
-                ＋ เพิ่มคำถาม (ยาว)
-              </button>
-            </div>
-          </>
-        )}
+          <div className="flex justify-center mt-6">
+            <button onClick={() => setShowTypeModal(true)} className="px-6 py-3 bg-white rounded-full shadow-md font-medium text-purple-600 border border-purple-200">+ เพิ่มคำถาม</button>
+          </div>
+        </section>
+      )}
 
-        {tab === "preview" && formId && (
+      {activeTab === "preview" && (
+        <section>
           <div className="bg-white rounded-xl shadow-sm border-t-8 border-purple-600 mb-4 overflow-hidden p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-semibold text-gray-800">{form?.title}</h2>
-                <p className="text-gray-600 mt-2">{form?.description}</p>
+            <h2 className="text-2xl font-semibold text-gray-800">{title}</h2>
+            <p className="text-gray-600 mt-2">{description}</p>
+          </div>
+
+          <div className="space-y-4">
+            {questions.map((q, idx) => (
+              <div key={q.id} className="bg-white rounded-xl shadow-sm p-6">
+                <div className="flex items-start gap-3 mb-4">
+                  <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded text-sm font-medium">{idx + 1}</span>
+                  <h3 className="text-lg font-medium">{q.text}{q.required && <span className="text-red-500 ml-1">*</span>}</h3>
+                </div>
+                <div className="ml-9">
+                  {q.type === "short" && <input className="w-full px-4 py-3 border-2 rounded-lg" onChange={(e) => setAnswers((p) => ({ ...p, [q.id]: e.target.value }))} />}
+                  {q.type === "long" && <textarea className="w-full px-4 py-3 border-2 rounded-lg h-28" onChange={(e) => setAnswers((p) => ({ ...p, [q.id]: e.target.value }))} />}
+                  {q.type === "multiple" && q.options.map((opt) => <label key={opt} className="block p-2"><input type="radio" name={`q_${q.id}`} value={opt} onChange={(e) => setAnswers((p) => ({ ...p, [q.id]: e.target.value }))} /> {opt}</label>)}
+                  {q.type === "checkbox" && q.options.map((opt) => <label key={opt} className="block p-2"><input type="checkbox" onChange={(e) => {
+                    const set = new Set((answers[q.id] ?? "").split(",").map((s) => s.trim()).filter(Boolean));
+                    if (e.target.checked) set.add(opt); else set.delete(opt);
+                    setAnswers((p) => ({ ...p, [q.id]: Array.from(set).join(", ") }));
+                  }} /> {opt}</label>)}
+                  {q.type === "dropdown" && <select className="w-full px-4 py-3 border-2 rounded-lg" onChange={(e) => setAnswers((p) => ({ ...p, [q.id]: e.target.value }))}><option value="">เลือก...</option>{q.options.map((opt) => <option key={opt} value={opt}>{opt}</option>)}</select>}
+                  {q.type === "scale" && <div className="flex items-center gap-3">{[1, 2, 3, 4, 5].map((n) => <label key={n}><input type="radio" name={`q_${q.id}`} value={n} onChange={(e) => setAnswers((p) => ({ ...p, [q.id]: e.target.value }))} /> {n}</label>)}</div>}
+                  {q.type === "date" && <input type="date" className="px-4 py-3 border-2 rounded-lg" onChange={(e) => setAnswers((p) => ({ ...p, [q.id]: e.target.value }))} />}
+                  {q.type === "time" && <input type="time" className="px-4 py-3 border-2 rounded-lg" onChange={(e) => setAnswers((p) => ({ ...p, [q.id]: e.target.value }))} />}
+                </div>
               </div>
-              <a className="text-purple-600 font-medium hover:underline" href={previewUrl}>
-                เปิดหน้า Preview
-              </a>
+            ))}
+          </div>
+          <div className="flex justify-end mt-6"><button onClick={submitPreview} className="bg-purple-600 text-white px-8 py-3 rounded-lg">ส่งคำตอบ</button></div>
+        </section>
+      )}
+
+      {activeTab === "responses" && (
+        <section>
+          <div className="bg-white rounded-xl shadow-sm p-6 mb-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold text-gray-800">📊 สรุปคำตอบ</h2>
+              <span className="bg-purple-100 text-purple-700 px-4 py-1 rounded-full font-medium">{submissions.length} คำตอบ</span>
             </div>
-            <p className="text-sm text-gray-500 mt-3">
-              หน้า Preview คือฟอร์มสำหรับผู้ตอบ (public) — ส่งคำตอบแล้วจะไปแสดงในหน้า Responses
-            </p>
+            {submissions.length === 0 ? <p className="text-gray-500">ยังไม่มีคำตอบ</p> : responseSummary.map(([q, c]) => <div key={q} className="mb-3"><h4 className="font-medium">{q}</h4><p className="text-sm text-gray-500">{c} คำตอบ</p></div>)}
           </div>
-        )}
 
-        {tab === "responses" && formId && (
-          <div className="bg-white rounded-xl shadow-sm border-t-8 border-purple-600 mb-4 overflow-hidden p-6">
-            <a className="text-purple-600 font-medium hover:underline" href={responsesUrl}>
-              เปิดหน้า Responses
-            </a>
+          {submissions.map((s, i) => {
+            const ordered = [...s.answers].sort((a, b) => a.question.order - b.question.order);
+            return <div key={s.id} className="bg-white rounded-xl shadow-sm p-6 mb-4"><div className="flex justify-between mb-4"><span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm">คำตอบ #{submissions.length - i}</span><span className="text-sm text-gray-500">{new Date(s.createdAt).toLocaleString("th-TH")}</span></div>{ordered.map((a) => <div key={a.id} className="mb-2"><p className="text-sm text-gray-500">{a.question.text}</p><p className="font-medium">{a.value || <span className="text-gray-400">ไม่ได้ตอบ</span>}</p></div>)}</div>;
+          })}
+        </section>
+      )}
+
+      {showTypeModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowTypeModal(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="p-6 border-b"><h3 className="text-lg font-semibold">เลือกประเภทคำถาม</h3></div>
+            <div className="p-4 grid grid-cols-2 gap-3">
+              {QUESTION_TYPES.map((t) => (
+                <button key={t.value} onClick={() => addQuestion(t.value)} className="p-4 rounded-xl hover:bg-purple-50 border text-left">{t.label}</button>
+              ))}
+            </div>
+            <div className="p-4 border-t bg-gray-50"><button onClick={() => setShowTypeModal(false)} className="w-full py-2">ยกเลิก</button></div>
           </div>
-        )}
-      </main>
-
-      <Toast message={msg} />
-    </div>
+        </div>
+      )}
+    </main>
   );
 }
