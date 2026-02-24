@@ -61,7 +61,7 @@ export default function FormBuilder({ formId }: { formId: string }) {
     await fetch(`/api/forms/${formId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, description, isActive, startAt: startAt || null, endAt: endAt || null }),
+      body: JSON.stringify({ title, description, isActive, startAt: startAt || null, endAt: endAt || null, formData: { title, description, questions } }),
     });
   }
 

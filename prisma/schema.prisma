@@ -36,6 +36,7 @@ model Form {
   ownerId     String
   title       String     @default("แบบฟอร์มใหม่")
   description String     @default("")
+  formData    Json?
   isActive    Boolean    @default(true)
   startAt     DateTime?
   endAt       DateTime?

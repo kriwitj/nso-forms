@@ -38,6 +38,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ formId
     data: {
       title: typeof body.title === "string" ? body.title : undefined,
       description: typeof body.description === "string" ? body.description : undefined,
+      formData: typeof body.formData === "object" && body.formData !== null ? body.formData : undefined,
       isActive: typeof body.isActive === "boolean" ? body.isActive : undefined,
       startAt: body.startAt ? new Date(body.startAt) : body.startAt === null ? null : undefined,
       endAt: body.endAt ? new Date(body.endAt) : body.endAt === null ? null : undefined,
