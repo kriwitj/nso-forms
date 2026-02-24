@@ -12,10 +12,8 @@ export default function LoginPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const q = new URLSearchParams(window.location.search);
-      setPending(q.get("pending") === "1");
-    }
+    const q = new URLSearchParams(window.location.search);
+    setPending(q.get("pending") === "1");
   }, []);
 
   async function onSubmit(e: React.FormEvent) {
@@ -33,16 +31,19 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="max-w-md mx-auto p-6 mt-16 bg-white rounded-xl shadow">
-      <h1 className="text-2xl font-bold mb-4">เข้าสู่ระบบ</h1>
-      {pending && <p className="text-amber-700 mb-2">บัญชีของคุณรอการอนุมัติจากผู้ดูแล</p>}
-      {error && <p className="text-red-600 mb-2">{error}</p>}
-      <form className="space-y-3" onSubmit={onSubmit}>
-        <input className="w-full border p-2 rounded" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-        <input className="w-full border p-2 rounded" type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
-        <button className="w-full bg-purple-600 text-white p-2 rounded">Login</button>
-      </form>
-      <p className="mt-3 text-sm">ยังไม่มีบัญชี? <Link className="text-purple-700" href="/register">สมัครสมาชิก</Link></p>
+    <main className="max-w-md mx-auto px-4 py-12">
+      <div className="bg-white rounded-2xl p-8 border border-sky-100 shadow-sm">
+        <h1 className="text-3xl font-bold text-sky-900 mb-2">เข้าสู่ระบบ</h1>
+        <p className="text-slate-500 mb-6">ยินดีต้อนรับเข้าสู่ NSO Forms</p>
+        {pending && <p className="text-amber-700 mb-3">บัญชีของคุณรอการอนุมัติจากผู้ดูแล</p>}
+        {error && <p className="text-red-600 mb-3">{error}</p>}
+        <form className="space-y-4" onSubmit={onSubmit}>
+          <input className="w-full border border-sky-200 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-300" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <input className="w-full border border-sky-200 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-300" type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          <button className="w-full bg-sky-600 hover:bg-sky-700 text-white p-3 rounded-xl font-medium">เข้าสู่ระบบ</button>
+        </form>
+        <p className="mt-4 text-sm">ยังไม่มีบัญชี? <Link className="text-sky-700 hover:underline" href="/register">สมัครสมาชิก</Link></p>
+      </div>
     </main>
   );
 }

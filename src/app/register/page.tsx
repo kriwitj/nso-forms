@@ -25,16 +25,19 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="max-w-md mx-auto p-6 mt-16 bg-white rounded-xl shadow">
-      <h1 className="text-2xl font-bold mb-4">สมัครสมาชิก</h1>
-      {msg && <p className="mb-2 text-green-700">{msg}</p>}
-      <form className="space-y-3" onSubmit={onSubmit}>
-        <input className="w-full border p-2 rounded" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
-        <input className="w-full border p-2 rounded" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-        <input className="w-full border p-2 rounded" type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
-        <button className="w-full bg-purple-600 text-white p-2 rounded">Register</button>
-      </form>
-      <p className="mt-3 text-sm"><Link className="text-purple-700" href="/login">กลับไปหน้า Login</Link></p>
+    <main className="max-w-md mx-auto px-4 py-12">
+      <div className="bg-white rounded-2xl p-8 border border-sky-100 shadow-sm">
+        <h1 className="text-3xl font-bold text-sky-900 mb-2">สมัครสมาชิก</h1>
+        <p className="text-slate-500 mb-6">สร้างบัญชีเพื่อใช้งานระบบ</p>
+        {msg && <p className="mb-3 text-green-700">{msg}</p>}
+        <form className="space-y-4" onSubmit={onSubmit}>
+          <input className="w-full border border-sky-200 p-3 rounded-xl" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
+          <input className="w-full border border-sky-200 p-3 rounded-xl" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <input className="w-full border border-sky-200 p-3 rounded-xl" type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          <button className="w-full bg-sky-600 hover:bg-sky-700 text-white p-3 rounded-xl font-medium">สมัครสมาชิก</button>
+        </form>
+        <p className="mt-4 text-sm"><Link className="text-sky-700 hover:underline" href="/login">กลับไปหน้า Login</Link></p>
+      </div>
     </main>
   );
 }

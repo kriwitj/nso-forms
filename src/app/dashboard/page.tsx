@@ -1,9 +1,10 @@
 "use client";
 
+import Breadcrumbs from "@/components/Breadcrumbs";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
-type Form = { id: string; title: string; description: string; isActive: boolean; startAt: string | null; endAt: string | null };
+type Form = { id: string; title: string; description: string; isActive: boolean };
 
 export default function DashboardPage() {
   const [forms, setForms] = useState<Form[]>([]);
@@ -29,24 +30,19 @@ export default function DashboardPage() {
     await load();
   }
 
-  async function remove(id: string) {
-    await fetch(`/api/forms/${id}`, { method: "DELETE" });
-    await load();
-  }
-
-  return <main className="max-w-5xl mx-auto p-6">
-    <div className="flex justify-between items-center mb-5"><h1 className="text-2xl font-bold">Dashboard</h1><button onClick={createForm} className="bg-purple-600 text-white px-4 py-2 rounded">+ สร้างฟอร์ม</button></div>
-    <div className="grid grid-cols-2 gap-3 mb-6">
-      <div className="bg-white p-4 rounded shadow">จำนวนฟอร์มทั้งหมด: <b>{stats.total}</b></div>
-      <div className="bg-white p-4 rounded shadow">ฟอร์มที่เปิดใช้งาน: <b>{stats.active}</b></div>
+  return <main className="max-w-6xl mx-auto p-6">
+    <Breadcrumbs items={[{ label: "หน้าแรก", href: "/" }, { label: "แดชบอร์ด" }]} />
+    <div className="flex justify-between items-center mb-5"><h1 className="text-2xl font-bold text-sky-900">แดชบอร์ดฟอร์ม</h1><button onClick={createForm} className="bg-sky-600 text-white px-4 py-2 rounded-xl">+ สร้างฟอร์ม</button></div>
+    <div className="grid md:grid-cols-2 gap-3 mb-6">
+      <div className="bg-white p-4 rounded-xl border border-sky-100">จำนวนฟอร์มทั้งหมด: <b>{stats.total}</b></div>
+      <div className="bg-white p-4 rounded-xl border border-sky-100">ฟอร์มที่เปิดใช้งาน: <b>{stats.active}</b></div>
     </div>
-    <div className="space-y-3">{forms.map((f) => <div key={f.id} className="bg-white rounded shadow p-4">
-      <div className="flex justify-between"><div><h3 className="font-semibold">{f.title}</h3><p className="text-sm text-gray-600">{f.description || "-"}</p></div><div className="space-x-2">
-        <Link className="px-2 py-1 border rounded" href={`/forms/${f.id}/builder`}>แก้ไข</Link>
-        <Link className="px-2 py-1 border rounded" href={`/f/${f.id}`}>ตอบแบบฟอร์ม</Link>
-        <a className="px-2 py-1 border rounded" href={`/api/forms/${f.id}/export`}>Export Excel(CSV)</a>
-        <button className="px-2 py-1 border rounded" onClick={() => toggle(f)}>{f.isActive ? "ปิด" : "เปิด"}</button>
-        <button className="px-2 py-1 border rounded text-red-600" onClick={() => remove(f.id)}>ลบ</button>
+    <div className="space-y-3">{forms.map((f) => <div key={f.id} className="bg-white rounded-xl border border-sky-100 p-4">
+      <div className="flex flex-col md:flex-row md:justify-between gap-3"><div><h3 className="font-semibold text-sky-900">{f.title}</h3><p className="text-sm text-gray-600">{f.description || "-"}</p></div><div className="flex flex-wrap gap-2">
+        <Link className="px-3 py-2 border rounded-lg" href={`/forms/${f.id}/builder`}>แก้ไข</Link>
+        <Link className="px-3 py-2 border rounded-lg" href={`/f/${f.id}`}>ตอบแบบฟอร์ม</Link>
+        <a className="px-3 py-2 border rounded-lg" href={`/api/forms/${f.id}/export`}>Export Excel</a>
+        <button className="px-3 py-2 border rounded-lg" onClick={() => toggle(f)}>{f.isActive ? "ปิดฟอร์ม" : "เปิดฟอร์ม"}</button>
       </div></div>
     </div>)}</div>
   </main>;

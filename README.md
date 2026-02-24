@@ -1,13 +1,15 @@
-# Form Builder (Next.js + Postgres + Prisma + Docker)
+# NSO Forms (Next.js + Postgres + Prisma + Docker)
 
 ## Run (Docker)
 ```bash
 docker compose up -d --build
 docker compose exec web npx prisma migrate dev --name init
+docker compose exec web npm run prisma:seed
 ```
 
-Open:
-- Builder: http://localhost:3000
-- Public preview: click "ดูตัวอย่าง" (route `/f/[formId]`)
-- Responses: click "คำตอบ" (route `/f/[formId]/responses`)
-"# nso-forms" 
+## Seed admin user
+ค่าปริยายของ seed:
+- Email: `admin@nso.local`
+- Password: `Admin@1234`
+
+สามารถ override ได้ด้วย environment variables: `ADMIN_EMAIL`, `ADMIN_NAME`, `ADMIN_PASSWORD`.

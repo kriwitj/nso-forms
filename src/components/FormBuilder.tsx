@@ -1,5 +1,6 @@
 "use client";
 
+import Breadcrumbs from "@/components/Breadcrumbs";
 import { useEffect, useState } from "react";
 
 type Question = { id: string; text: string; type: string; required: boolean; order: number };
@@ -35,16 +36,19 @@ export default function FormBuilder({ formId }: { formId: string }) {
   }
 
   return <main className="max-w-4xl mx-auto p-6 space-y-4">
-    <h1 className="text-2xl font-bold">แก้ไขฟอร์ม</h1>
-    <input className="w-full border p-2 rounded" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="ชื่อฟอร์ม" />
-    <textarea className="w-full border p-2 rounded" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="คำอธิบาย" />
-    <div className="flex gap-4 items-center">
-      <label><input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} /> เปิดใช้งาน</label>
-      <label>เริ่ม <input type="datetime-local" value={startAt} onChange={(e) => setStartAt(e.target.value)} className="border p-1 rounded" /></label>
-      <label>สิ้นสุด <input type="datetime-local" value={endAt} onChange={(e) => setEndAt(e.target.value)} className="border p-1 rounded" /></label>
-      <button onClick={saveMeta} className="bg-purple-600 text-white px-3 py-1 rounded">บันทึก</button>
+    <Breadcrumbs items={[{ label: "หน้าแรก", href: "/" }, { label: "แดชบอร์ด", href: "/dashboard" }, { label: "แก้ไขฟอร์ม" }]} />
+    <h1 className="text-2xl font-bold text-sky-900">แก้ไขฟอร์ม</h1>
+    <div className="bg-white p-4 rounded-xl border border-sky-100 space-y-3">
+      <input className="w-full border p-3 rounded-lg" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="ชื่อฟอร์ม" />
+      <textarea className="w-full border p-3 rounded-lg" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="คำอธิบาย" />
+      <div className="flex flex-wrap gap-4 items-center">
+        <label><input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} /> เปิดใช้งาน</label>
+        <label>เริ่ม <input type="datetime-local" value={startAt} onChange={(e) => setStartAt(e.target.value)} className="border p-1 rounded" /></label>
+        <label>สิ้นสุด <input type="datetime-local" value={endAt} onChange={(e) => setEndAt(e.target.value)} className="border p-1 rounded" /></label>
+        <button onClick={saveMeta} className="bg-sky-600 text-white px-3 py-1 rounded">บันทึก</button>
+      </div>
     </div>
-    <div className="bg-white p-4 rounded shadow">
+    <div className="bg-white p-4 rounded-xl border border-sky-100">
       <div className="flex justify-between"><h2 className="font-semibold">คำถาม ({questions.length})</h2><button onClick={addQuestion} className="border px-2 py-1 rounded">+ เพิ่มคำถาม</button></div>
       {questions.map((q) => <div key={q.id} className="border-b py-2">{q.text}</div>)}
     </div>
