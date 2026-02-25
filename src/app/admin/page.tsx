@@ -15,7 +15,7 @@ export default function AdminPage() {
     const u = await fetch("/api/admin/users", { cache: "no-store" });
     if (!u.ok) return (window.location.href = "/login");
     setUsers(await u.json());
-    const f = await fetch("/api/forms", { cache: "no-store" });
+    const f = await fetch("/api/forms?limit=100&includeDeleted=true", { cache: "no-store" });
     setForms(await f.json());
   }
 

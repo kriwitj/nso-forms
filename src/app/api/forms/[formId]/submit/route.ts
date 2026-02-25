@@ -10,7 +10,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ formId:
   const body = await req.json();
   const answers = body?.answers ?? {};
 
-  const form = await prisma.form.findUnique({ where: { id: formId } });
+  const form = await prisma.form.findFirst({ where: { id: formId, deletedAt: null } });
   if (!form) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const now = new Date();
   if (!form.isActive || (form.startAt && now < form.startAt) || (form.endAt && now > form.endAt)) {

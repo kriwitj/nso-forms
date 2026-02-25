@@ -5,6 +5,7 @@ import { requireUser } from "@/lib/auth";
 async function canManage(formId: string, userId: string, role: string) {
   const form = await prisma.form.findUnique({ where: { id: formId } });
   if (!form) return null;
+  if (form.deletedAt) return null;
   if (role !== "ADMIN" && form.ownerId !== userId) return undefined;
   return form;
 }
@@ -14,8 +15,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ formId:
   if (auth.error) return auth.error;
   const { formId } = await params;
 
-  const full = await prisma.form.findUnique({
-    where: { id: formId },
+  const full = await prisma.form.findFirst({
+    where: { id: formId, deletedAt: null },
     include: { questions: { orderBy: { order: "asc" } } },
   });
 
@@ -57,6 +58,9 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ form
   if (form === undefined) return NextResponse.json({ error: "forbidden" }, { status: 403 });
   if (!form) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  await prisma.form.delete({ where: { id: formId } });
+  await prisma.form.update({
+    where: { id: formId },
+    data: { deletedAt: new Date(), isActive: false },
+  });
   return NextResponse.json({ ok: true });
 }

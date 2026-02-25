@@ -10,12 +10,23 @@ function csvEscape(value: string) {
   return v;
 }
 
-export async function GET(_req: Request, { params }: { params: Promise<{ formId: string }> }) {
+function htmlEscape(value: string) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+}
+
+export async function GET(req: Request, { params }: { params: Promise<{ formId: string }> }) {
   const auth = await requireUser();
   if (auth.error) return auth.error;
 
+  const { searchParams } = new URL(req.url);
+  const format = searchParams.get("format") === "xlsx" ? "xlsx" : "csv";
+
   const { formId } = await params;
-  const form = await prisma.form.findUnique({ where: { id: formId }, include: { questions: { orderBy: { order: "asc" } } } });
+  const form = await prisma.form.findFirst({ where: { id: formId, deletedAt: null }, include: { questions: { orderBy: { order: "asc" } } } });
   if (!form) return NextResponse.json({ error: "Not found" }, { status: 404 });
   if (auth.user.role !== "ADMIN" && form.ownerId !== auth.user.id) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
@@ -33,8 +44,24 @@ export async function GET(_req: Request, { params }: { params: Promise<{ formId:
     return [s.createdAt.toISOString(), ...form.questions.map((q) => byQ.get(q.id) || "")];
   });
 
+  if (format === "xlsx") {
+    const tableRows = [headers, ...rows]
+      .map((row) => `<tr>${row.map((cell) => `<td>${htmlEscape(String(cell))}</td>`).join("")}</tr>`)
+      .join("");
+
+    const html = `\uFEFF<!doctype html><html><head><meta charset="utf-8" /></head><body><table>${tableRows}</table></body></html>`;
+
+    return new NextResponse(html, {
+      headers: {
+        "Content-Type": "application/vnd.ms-excel; charset=utf-8",
+        "Content-Disposition": `attachment; filename=form-${formId}.xlsx`,
+      },
+    });
+  }
+
   const csv = [headers, ...rows].map((r) => r.map(csvEscape).join(",")).join("\n");
-  return new NextResponse(csv, {
+  const csvWithBom = `\uFEFF${csv}`;
+  return new NextResponse(csvWithBom, {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
       "Content-Disposition": `attachment; filename=form-${formId}.csv`,

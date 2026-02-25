@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 
 async function checkAccess(formId: string, userId: string, role: string) {
-  const form = await prisma.form.findUnique({ where: { id: formId } });
+  const form = await prisma.form.findFirst({ where: { id: formId, deletedAt: null } });
   if (!form) return null;
   if (role !== "ADMIN" && form.ownerId !== userId) return undefined;
   return form;

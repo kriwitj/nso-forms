@@ -38,6 +38,7 @@ model Form {
   description String     @default("")
   formData    Json?
   isActive    Boolean    @default(true)
+  deletedAt   DateTime?
   startAt     DateTime?
   endAt       DateTime?
   createdAt   DateTime   @default(now())
@@ -46,6 +47,9 @@ model Form {
   owner       User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   questions   Question[]
   submissions Submission[]
+
+  @@index([ownerId, deletedAt])
+  @@index([createdAt])
 }
 
 model Question {

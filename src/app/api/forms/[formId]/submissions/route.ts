@@ -7,7 +7,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ formId:
   if (auth.error) return auth.error;
 
   const { formId } = await params;
-  const form = await prisma.form.findUnique({ where: { id: formId } });
+  const form = await prisma.form.findFirst({ where: { id: formId, deletedAt: null } });
   if (!form) return NextResponse.json({ error: "Not found" }, { status: 404 });
   if (auth.user.role !== "ADMIN" && form.ownerId !== auth.user.id) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });

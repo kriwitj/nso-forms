@@ -1,6 +1,7 @@
 "use client";
 
 import Breadcrumbs from "@/components/Breadcrumbs";
+import Toast, { useToast } from "@/components/ui/Toast";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
@@ -36,6 +37,7 @@ export default function FormBuilder({ formId }: { formId: string }) {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const { msg, show } = useToast();
 
   async function load() {
     const data = await fetch(`/api/forms/${formId}`, { cache: "no-store" }).then((r) => r.json());
@@ -58,56 +60,75 @@ export default function FormBuilder({ formId }: { formId: string }) {
   }, [formId]);
 
   async function saveMeta() {
-    await fetch(`/api/forms/${formId}`, {
+    if (!window.confirm("ยืนยันบันทึกการเปลี่ยนแปลงฟอร์ม?")) return;
+    const response = await fetch(`/api/forms/${formId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title, description, isActive, startAt: startAt || null, endAt: endAt || null, formData: { title, description, questions } }),
     });
+    if (!response.ok) {
+      show("บันทึกไม่สำเร็จ");
+      return;
+    }
+    show("บันทึกฟอร์มเรียบร้อย");
   }
 
   async function addQuestion(type: QuestionType) {
     const options = ["multiple", "checkbox", "dropdown"].includes(type)
       ? ["ตัวเลือก 1", "ตัวเลือก 2", "ตัวเลือก 3"]
       : [];
-    await fetch(`/api/forms/${formId}/questions`, {
+    const response = await fetch(`/api/forms/${formId}/questions`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ type, text: "คำถามใหม่", options }),
     });
+    if (!response.ok) return show("เพิ่มคำถามไม่สำเร็จ");
     setShowTypeModal(false);
+    show("เพิ่มคำถามแล้ว");
     await load();
   }
 
   async function updateQuestion(questionId: string, patch: Partial<Question>) {
-    await fetch(`/api/forms/${formId}/questions/${questionId}`, {
+    const response = await fetch(`/api/forms/${formId}/questions/${questionId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(patch),
     });
+    if (!response.ok) return show("บันทึกคำถามไม่สำเร็จ");
     await load();
   }
 
   async function removeQuestion(questionId: string) {
-    await fetch(`/api/forms/${formId}/questions/${questionId}`, { method: "DELETE" });
+    if (!window.confirm("ยืนยันลบคำถามนี้?")) return;
+    const response = await fetch(`/api/forms/${formId}/questions/${questionId}`, { method: "DELETE" });
+    if (!response.ok) return show("ลบคำถามไม่สำเร็จ");
+    show("ลบคำถามแล้ว");
     await load();
   }
 
   async function duplicateQuestion(q: Question) {
-    await fetch(`/api/forms/${formId}/questions`, {
+    const response = await fetch(`/api/forms/${formId}/questions`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ type: q.type, text: `${q.text} (สำเนา)`, options: q.options, required: q.required }),
     });
+    if (!response.ok) return show("คัดลอกคำถามไม่สำเร็จ");
+    show("คัดลอกคำถามแล้ว");
     await load();
   }
 
   async function submitPreview() {
-    await fetch(`/api/forms/${formId}/submit`, {
+    const response = await fetch(`/api/forms/${formId}/submit`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ answers }),
     });
+    if (!response.ok) {
+      show("ส่งคำตอบไม่สำเร็จ");
+      return;
+    }
     setAnswers({});
+    show("ส่งคำตอบเรียบร้อยแล้ว");
     await loadSubmissions();
     setActiveTab("responses");
   }
@@ -162,8 +183,8 @@ export default function FormBuilder({ formId }: { formId: string }) {
       {activeTab === "edit" && (
         <section>
           <div className="bg-white rounded-xl shadow-sm border-t-8 border-purple-600 mb-4 overflow-hidden p-6 space-y-3">
-            <input className="w-full text-2xl font-semibold border-b-2 border-transparent hover:border-gray-200 focus:border-purple-500 outline-none pb-2" value={title} onChange={(e) => setTitle(e.target.value)} onBlur={saveMeta} />
-            <input className="w-full text-gray-600 border-b-2 border-transparent hover:border-gray-200 focus:border-purple-500 outline-none pb-2" placeholder="คำอธิบายแบบฟอร์ม" value={description} onChange={(e) => setDescription(e.target.value)} onBlur={saveMeta} />
+            <input className="w-full text-2xl font-semibold border-b-2 border-transparent hover:border-gray-200 focus:border-purple-500 outline-none pb-2" value={title} onChange={(e) => setTitle(e.target.value)} />
+            <input className="w-full text-gray-600 border-b-2 border-transparent hover:border-gray-200 focus:border-purple-500 outline-none pb-2" placeholder="คำอธิบายแบบฟอร์ม" value={description} onChange={(e) => setDescription(e.target.value)} />
             <div className="flex flex-wrap gap-4 items-center pt-2">
               <label><input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} /> เปิดใช้งาน</label>
               <label>เริ่ม <input type="datetime-local" value={startAt} onChange={(e) => setStartAt(e.target.value)} className="border p-1 rounded" /></label>
@@ -286,6 +307,7 @@ export default function FormBuilder({ formId }: { formId: string }) {
           </div>
         </div>
       )}
+      <Toast message={msg} />
     </main>
   );
 }
