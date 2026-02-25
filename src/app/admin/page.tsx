@@ -61,15 +61,15 @@ export default function AdminPage() {
   return (
     <main className="max-w-6xl mx-auto p-6 space-y-6">
       <Breadcrumbs items={[{ label: "หน้าแรก", href: "/" }, { label: "จัดการระบบ" }]} />
-      <h1 className="text-2xl font-bold text-sky-900">Admin Console</h1>
+      <h1 className="text-2xl font-bold text-sky-900 dark:text-sky-200">Admin Console</h1>
 
-      <section className="bg-white p-4 rounded-xl border border-sky-100">
-        <h2 className="font-semibold mb-3">เพิ่มผู้ใช้งาน</h2>
+      <section className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-sky-100 dark:border-slate-700">
+        <h2 className="font-semibold mb-3 text-slate-800 dark:text-slate-100">เพิ่มผู้ใช้งาน</h2>
         <form onSubmit={createUser} className="grid md:grid-cols-5 gap-2">
-          <input className="border rounded px-2 py-2" placeholder="name" value={newUser.name} onChange={(e) => setNewUser((p) => ({ ...p, name: e.target.value }))} />
-          <input className="border rounded px-2 py-2" placeholder="email" value={newUser.email} onChange={(e) => setNewUser((p) => ({ ...p, email: e.target.value }))} />
-          <input className="border rounded px-2 py-2" type="password" placeholder="password" value={newUser.password} onChange={(e) => setNewUser((p) => ({ ...p, password: e.target.value }))} />
-          <select className="border rounded px-2 py-2" value={newUser.role} onChange={(e) => setNewUser((p) => ({ ...p, role: e.target.value }))}>
+          <input className="border border-sky-200 dark:border-slate-600 rounded px-2 py-2 dark:bg-slate-800" placeholder="name" value={newUser.name} onChange={(e) => setNewUser((p) => ({ ...p, name: e.target.value }))} />
+          <input className="border border-sky-200 dark:border-slate-600 rounded px-2 py-2 dark:bg-slate-800" placeholder="email" value={newUser.email} onChange={(e) => setNewUser((p) => ({ ...p, email: e.target.value }))} />
+          <input className="border border-sky-200 dark:border-slate-600 rounded px-2 py-2 dark:bg-slate-800" type="password" placeholder="password" value={newUser.password} onChange={(e) => setNewUser((p) => ({ ...p, password: e.target.value }))} />
+          <select className="border border-sky-200 dark:border-slate-600 rounded px-2 py-2 dark:bg-slate-800" value={newUser.role} onChange={(e) => setNewUser((p) => ({ ...p, role: e.target.value }))}>
             <option value="USER">USER</option>
             <option value="ADMIN">ADMIN</option>
           </select>
@@ -77,16 +77,16 @@ export default function AdminPage() {
         </form>
       </section>
 
-      <section className="bg-white p-4 rounded-xl border border-sky-100">
-        <h2 className="font-semibold mb-3">จัดการผู้ใช้งาน (CRUD)</h2>
+      <section className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-sky-100 dark:border-slate-700">
+        <h2 className="font-semibold mb-3 text-slate-800 dark:text-slate-100">จัดการผู้ใช้งาน (CRUD)</h2>
         <div className="space-y-2">
           {users.map((u) => (
-            <div key={u.id} className="flex flex-col md:flex-row md:justify-between md:items-center border rounded-lg p-3 bg-slate-50 gap-2">
+            <div key={u.id} className="flex flex-col md:flex-row md:justify-between md:items-center border dark:border-slate-600 rounded-lg p-3 bg-slate-50 dark:bg-slate-800 gap-2">
               <span>
                 {u.name} ({u.email}) - {u.role}
               </span>
               <div className="flex gap-2 flex-wrap">
-                {u.isApproved ? <span className="text-green-700">อนุมัติแล้ว</span> : <button className="px-3 py-1 rounded-lg bg-sky-600 text-white" onClick={() => approve(u.id)}>อนุมัติ</button>}
+                {u.isApproved ? <span className="text-green-700 dark:text-green-400">อนุมัติแล้ว</span> : <button className="px-3 py-1 rounded-lg bg-sky-600 text-white" onClick={() => approve(u.id)}>อนุมัติ</button>}
                 <button className="px-3 py-1 rounded-lg bg-amber-100 text-amber-800" onClick={() => updateUser(u)}>แก้ไข</button>
                 <button className="px-3 py-1 rounded-lg bg-red-100 text-red-700" onClick={() => deleteUser(u.id)}>ลบ</button>
               </div>
@@ -95,11 +95,11 @@ export default function AdminPage() {
         </div>
       </section>
 
-      <section className="bg-white p-4 rounded-xl border border-sky-100">
-        <h2 className="font-semibold mb-3">จัดการฟอร์มทั้งหมด ({forms.length})</h2>
+      <section className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-sky-100 dark:border-slate-700">
+        <h2 className="font-semibold mb-3 text-slate-800 dark:text-slate-100">จัดการฟอร์มทั้งหมด ({forms.length})</h2>
         <div className="space-y-2">
           {forms.map((f) => (
-            <div key={f.id} className="border rounded-lg p-3 bg-slate-50">
+            <div key={f.id} className="border dark:border-slate-600 rounded-lg p-3 bg-slate-50 dark:bg-slate-800">
               {f.title} - {f.isActive ? "เปิด" : "ปิด"}
             </div>
           ))}

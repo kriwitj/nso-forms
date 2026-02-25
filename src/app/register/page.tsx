@@ -26,17 +26,17 @@ export default function RegisterPage() {
 
   return (
     <main className="max-w-md mx-auto px-4 py-12">
-      <div className="bg-white rounded-2xl p-8 border border-sky-100 shadow-sm">
-        <h1 className="text-3xl font-bold text-sky-900 mb-2">สมัครสมาชิก</h1>
-        <p className="text-slate-500 mb-6">สร้างบัญชีเพื่อใช้งานระบบ</p>
+      <div className="bg-white dark:bg-slate-900 rounded-2xl p-8 border border-sky-100 dark:border-slate-700 shadow-sm">
+        <h1 className="text-3xl font-bold text-sky-900 dark:text-sky-200 mb-2">สมัครสมาชิก</h1>
+        <p className="text-slate-500 dark:text-slate-300 mb-6">สร้างบัญชีเพื่อใช้งานระบบ</p>
         {msg && <p className="mb-3 text-green-700">{msg}</p>}
         <form className="space-y-4" onSubmit={onSubmit}>
-          <input className="w-full border border-sky-200 p-3 rounded-xl" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
-          <input className="w-full border border-sky-200 p-3 rounded-xl" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-          <input className="w-full border border-sky-200 p-3 rounded-xl" type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          <input className="w-full border border-sky-200 dark:border-slate-600 dark:bg-slate-800 p-3 rounded-xl" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
+          <input className="w-full border border-sky-200 dark:border-slate-600 dark:bg-slate-800 p-3 rounded-xl" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <input className="w-full border border-sky-200 dark:border-slate-600 dark:bg-slate-800 p-3 rounded-xl" type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
           <button className="w-full bg-sky-600 hover:bg-sky-700 text-white p-3 rounded-xl font-medium">สมัครสมาชิก</button>
         </form>
-        <p className="mt-4 text-sm"><Link className="text-sky-700 hover:underline" href="/login">กลับไปหน้า Login</Link></p>
+        <p className="mt-4 text-sm"><Link className="text-sky-700 dark:text-sky-200 hover:underline" href="/login">กลับไปหน้า Login</Link></p>
       </div>
     </main>
   );

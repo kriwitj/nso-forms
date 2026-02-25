@@ -159,14 +159,14 @@ export default function FormBuilder({ formId }: { formId: string }) {
     <main className="max-w-4xl mx-auto px-4 py-6">
       <Breadcrumbs items={[{ label: "หน้าแรก", href: "/" }, { label: "แดชบอร์ด", href: "/dashboard" }, { label: "Form Builder" }]} />
 
-      <header className="bg-white shadow-sm sticky top-16 z-30 rounded-xl mb-4">
+      <header className="bg-white dark:bg-slate-900 shadow-sm sticky top-16 z-30 rounded-xl mb-4">
         <div className="px-4 py-3">
           <div className="flex items-center justify-between gap-2 flex-wrap">
-            <h1 className="text-xl font-semibold text-gray-800">{title}</h1>
+            <h1 className="text-xl font-semibold text-gray-800 dark:text-slate-100">{title}</h1>
             <div className="flex gap-2">
               <button onClick={() => setActiveTab("preview")} className="px-3 py-2 text-purple-600 hover:bg-purple-50 rounded-lg">👁️ ดูตัวอย่าง</button>
               <button onClick={() => setActiveTab("responses")} className="px-3 py-2 text-purple-600 hover:bg-purple-50 rounded-lg">
-                📊 คำตอบ <span className="bg-purple-100 px-2 py-0.5 rounded-full text-sm">{submissions.length}</span>
+                📊 คำตอบ <span className="bg-purple-100 dark:bg-purple-900/40 px-2 py-0.5 rounded-full text-sm">{submissions.length}</span>
               </button>
               <Link href={`/f/${formId}`} className="px-3 py-2 rounded-lg bg-purple-600 text-white">หน้าแบบฟอร์มจริง</Link>
             </div>
@@ -177,7 +177,7 @@ export default function FormBuilder({ formId }: { formId: string }) {
               <button
                 key={t.id}
                 onClick={() => setActiveTab(t.id)}
-                className={`pb-2 font-medium ${activeTab === t.id ? "border-b-[3px] border-purple-600 text-purple-700" : "text-gray-500"}`}
+                className={`pb-2 font-medium ${activeTab === t.id ? "border-b-[3px] border-purple-500 dark:border-purple-400 text-purple-700 dark:text-purple-200" : "text-gray-500 dark:text-slate-400"}`}
               >
                 {t.label}
               </button>
@@ -188,9 +188,9 @@ export default function FormBuilder({ formId }: { formId: string }) {
 
       {activeTab === "edit" && (
         <section>
-          <div className="bg-white rounded-xl shadow-sm border-t-8 border-purple-600 mb-4 overflow-hidden p-6 space-y-3">
+          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border-t-8 border-purple-500 dark:border-purple-400 mb-4 overflow-hidden p-6 space-y-3">
             <input className="w-full text-2xl font-semibold border-b-2 border-transparent hover:border-gray-200 focus:border-purple-500 outline-none pb-2" value={title} onChange={(e) => setTitle(e.target.value)} />
-            <input className="w-full text-gray-600 border-b-2 border-transparent hover:border-gray-200 focus:border-purple-500 outline-none pb-2" placeholder="คำอธิบายแบบฟอร์ม" value={description} onChange={(e) => setDescription(e.target.value)} />
+            <input className="w-full text-gray-600 dark:text-slate-300 border-b-2 border-transparent hover:border-gray-200 focus:border-purple-500 outline-none pb-2" placeholder="คำอธิบายแบบฟอร์ม" value={description} onChange={(e) => setDescription(e.target.value)} />
             <div className="flex flex-wrap gap-4 items-center pt-2">
               <label><input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} /> เปิดใช้งาน</label>
               <label>เริ่ม <input type="datetime-local" value={startAt} onChange={(e) => setStartAt(e.target.value)} className="border p-1 rounded" /></label>
@@ -201,9 +201,9 @@ export default function FormBuilder({ formId }: { formId: string }) {
 
           <div className="space-y-4">
             {questions.map((q, idx) => (
-              <div key={q.id} className="bg-white rounded-xl shadow-sm overflow-hidden border-l-4 border-purple-600 p-5">
+              <div key={q.id} className="bg-white dark:bg-slate-900 rounded-xl shadow-sm overflow-hidden border-l-4 border-purple-500 dark:border-purple-400 p-5">
                 <div className="flex items-center gap-3 mb-3">
-                  <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded text-sm font-medium">{idx + 1}</span>
+                  <span className="bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-200 px-2 py-1 rounded text-sm font-medium">{idx + 1}</span>
                   <input className="flex-1 text-lg border-b-2 border-transparent hover:border-gray-200 focus:border-purple-500 outline-none" defaultValue={q.text} onBlur={(e) => updateQuestion(q.id, { text: e.target.value })} />
                 </div>
                 <div className="mb-3">
@@ -216,7 +216,7 @@ export default function FormBuilder({ formId }: { formId: string }) {
                   <div className="space-y-2 mb-4">
                     {q.options.map((opt, i) => (
                       <div key={`${q.id}-${i}`} className="flex items-center gap-2">
-                        <input className="flex-1 px-3 py-2 border rounded-lg" defaultValue={opt} onBlur={(e) => {
+                        <input className="flex-1 px-3 py-2 border border-sky-200 dark:border-slate-600 rounded-lg" defaultValue={opt} onBlur={(e) => {
                           const next = [...q.options];
                           next[i] = e.target.value;
                           void updateQuestion(q.id, { options: next });
@@ -234,7 +234,7 @@ export default function FormBuilder({ formId }: { formId: string }) {
                 <div className="flex justify-between border-t pt-3">
                   <label><input type="checkbox" checked={q.required} onChange={(e) => updateQuestion(q.id, { required: e.target.checked })} /> จำเป็น</label>
                   <div className="space-x-2">
-                    <button className="px-2 py-1 rounded bg-purple-50 text-purple-700" onClick={() => duplicateQuestion(q)}>คัดลอก</button>
+                    <button className="px-2 py-1 rounded bg-purple-50 text-purple-700 dark:text-purple-200" onClick={() => duplicateQuestion(q)}>คัดลอก</button>
                     <button className="px-2 py-1 rounded bg-red-50 text-red-700" onClick={() => removeQuestion(q.id)}>ลบ</button>
                   </div>
                 </div>
@@ -243,23 +243,23 @@ export default function FormBuilder({ formId }: { formId: string }) {
           </div>
 
           <div className="flex justify-center mt-6">
-            <button onClick={() => setShowTypeModal(true)} className="px-6 py-3 bg-white rounded-full shadow-md font-medium text-purple-600 border border-purple-200">+ เพิ่มคำถาม</button>
+            <button onClick={() => setShowTypeModal(true)} className="px-6 py-3 bg-white dark:bg-slate-900 rounded-full shadow-md font-medium text-purple-600 border border-purple-200">+ เพิ่มคำถาม</button>
           </div>
         </section>
       )}
 
       {activeTab === "preview" && (
         <section>
-          <div className="bg-white rounded-xl shadow-sm border-t-8 border-purple-600 mb-4 overflow-hidden p-6">
-            <h2 className="text-2xl font-semibold text-gray-800">{title}</h2>
-            <p className="text-gray-600 mt-2">{description}</p>
+          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border-t-8 border-purple-500 dark:border-purple-400 mb-4 overflow-hidden p-6">
+            <h2 className="text-2xl font-semibold text-gray-800 dark:text-slate-100">{title}</h2>
+            <p className="text-gray-600 dark:text-slate-300 mt-2">{description}</p>
           </div>
 
           <div className="space-y-4">
             {questions.map((q, idx) => (
-              <div key={q.id} className="bg-white rounded-xl shadow-sm p-6">
+              <div key={q.id} className="bg-white dark:bg-slate-900 rounded-xl shadow-sm p-6">
                 <div className="flex items-start gap-3 mb-4">
-                  <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded text-sm font-medium">{idx + 1}</span>
+                  <span className="bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-200 px-2 py-1 rounded text-sm font-medium">{idx + 1}</span>
                   <h3 className="text-lg font-medium">{q.text}{q.required && <span className="text-red-500 ml-1">*</span>}</h3>
                 </div>
                 <div className="ml-9">
@@ -285,24 +285,24 @@ export default function FormBuilder({ formId }: { formId: string }) {
 
       {activeTab === "responses" && (
         <section>
-          <div className="bg-white rounded-xl shadow-sm p-6 mb-4">
+          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm p-6 mb-4">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-gray-800">📊 สรุปคำตอบ</h2>
-              <span className="bg-purple-100 text-purple-700 px-4 py-1 rounded-full font-medium">{submissions.length} คำตอบ</span>
+              <h2 className="text-xl font-semibold text-gray-800 dark:text-slate-100">📊 สรุปคำตอบ</h2>
+              <span className="bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-200 px-4 py-1 rounded-full font-medium">{submissions.length} คำตอบ</span>
             </div>
-            {submissions.length === 0 ? <p className="text-gray-500">ยังไม่มีคำตอบ</p> : responseSummary.map(([q, c]) => <div key={q} className="mb-3"><h4 className="font-medium">{q}</h4><p className="text-sm text-gray-500">{c} คำตอบ</p></div>)}
+            {submissions.length === 0 ? <p className="text-gray-500 dark:text-slate-400">ยังไม่มีคำตอบ</p> : responseSummary.map(([q, c]) => <div key={q} className="mb-3"><h4 className="font-medium">{q}</h4><p className="text-sm text-gray-500 dark:text-slate-400">{c} คำตอบ</p></div>)}
           </div>
 
           {submissions.map((s, i) => {
             const ordered = [...s.answers].sort((a, b) => a.question.order - b.question.order);
-            return <div key={s.id} className="bg-white rounded-xl shadow-sm p-6 mb-4"><div className="flex justify-between mb-4"><span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm">คำตอบ #{submissions.length - i}</span><span className="text-sm text-gray-500">{formatThaiDateTime(s.createdAt)}</span></div>{ordered.map((a) => <div key={a.id} className="mb-2"><p className="text-sm text-gray-500">{a.question.text}</p><p className="font-medium">{a.value || <span className="text-gray-400">ไม่ได้ตอบ</span>}</p></div>)}</div>;
+            return <div key={s.id} className="bg-white dark:bg-slate-900 rounded-xl shadow-sm p-6 mb-4"><div className="flex justify-between mb-4"><span className="bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-200 px-3 py-1 rounded-full text-sm">คำตอบ #{submissions.length - i}</span><span className="text-sm text-gray-500 dark:text-slate-400">{formatThaiDateTime(s.createdAt)}</span></div>{ordered.map((a) => <div key={a.id} className="mb-2"><p className="text-sm text-gray-500 dark:text-slate-400">{a.question.text}</p><p className="font-medium">{a.value || <span className="text-gray-400">ไม่ได้ตอบ</span>}</p></div>)}</div>;
           })}
         </section>
       )}
 
       {showTypeModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowTypeModal(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <div className="p-6 border-b"><h3 className="text-lg font-semibold">เลือกประเภทคำถาม</h3></div>
             <div className="p-4 grid grid-cols-2 gap-3">
               {QUESTION_TYPES.map((t) => (

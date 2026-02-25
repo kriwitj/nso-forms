@@ -38,7 +38,7 @@ export default function ResponsesView({ formId }: { formId: string }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-gray-600">
+      <div className="min-h-screen flex items-center justify-center text-gray-600 dark:text-slate-300">
         <div className="w-10 h-10 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin" />
         <span className="ml-3">กำลังโหลด...</span>
       </div>
@@ -48,20 +48,20 @@ export default function ResponsesView({ formId }: { formId: string }) {
   return (
     <div className="min-h-screen">
       <main className="max-w-4xl mx-auto px-4 py-6">
-        <div className="bg-white rounded-xl shadow-sm p-6 mb-4">
+        <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm p-6 mb-4">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gray-800">📊 สรุปคำตอบ</h2>
-            <span className="bg-purple-100 text-purple-700 px-4 py-1 rounded-full font-medium">{total} คำตอบ</span>
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-slate-100">📊 สรุปคำตอบ</h2>
+            <span className="bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-200 px-4 py-1 rounded-full font-medium">{total} คำตอบ</span>
           </div>
 
           {total === 0 ? (
-            <p className="text-gray-500 text-center py-8">ยังไม่มีคำตอบ</p>
+            <p className="text-gray-500 dark:text-slate-400 text-center py-8">ยังไม่มีคำตอบ</p>
           ) : (
             <div className="space-y-4">
               {summary.map(([q, c]) => (
                 <div key={q}>
                   <h4 className="font-medium mb-1">{q}</h4>
-                  <p className="text-sm text-gray-500">{c} คำตอบ</p>
+                  <p className="text-sm text-gray-500 dark:text-slate-400">{c} คำตอบ</p>
                 </div>
               ))}
             </div>
@@ -75,17 +75,17 @@ export default function ResponsesView({ formId }: { formId: string }) {
             const ordered = [...s.answers].sort((a, b) => a.question.order - b.question.order);
 
             return (
-              <div key={s.id} className="bg-white rounded-xl shadow-sm p-6">
+              <div key={s.id} className="bg-white dark:bg-slate-900 rounded-xl shadow-sm p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-medium">
+                  <span className="bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-200 px-3 py-1 rounded-full text-sm font-medium">
                     คำตอบ #{total - idx}
                   </span>
-                  <span className="text-gray-500 text-sm">{dateStr}</span>
+                  <span className="text-gray-500 dark:text-slate-400 text-sm">{dateStr}</span>
                 </div>
 
                 {ordered.map((a) => (
                   <div key={a.id} className="mb-3">
-                    <p className="text-sm text-gray-500">{a.question.text}</p>
+                    <p className="text-sm text-gray-500 dark:text-slate-400">{a.question.text}</p>
                     <p className="font-medium">
                       {a.value?.trim() ? a.value : <span className="text-gray-400">ไม่ได้ตอบ</span>}
                     </p>

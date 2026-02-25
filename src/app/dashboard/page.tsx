@@ -110,22 +110,22 @@ export default function DashboardPage() {
     <main className="max-w-6xl mx-auto p-6">
       <Breadcrumbs items={[{ label: "หน้าแรก", href: "/" }, { label: "แดชบอร์ด" }]} />
       <div className="flex justify-between items-center mb-5">
-        <h1 className="text-2xl font-bold text-sky-900">แดชบอร์ดฟอร์ม</h1>
+        <h1 className="text-2xl font-bold text-sky-900 dark:text-sky-200">แดชบอร์ดฟอร์ม</h1>
         <button onClick={createForm} className="bg-sky-600 text-white px-4 py-2 rounded-xl">+ สร้างฟอร์ม</button>
       </div>
 
       <div className="grid md:grid-cols-2 gap-3 mb-4">
-        <div className="bg-white p-4 rounded-xl border border-sky-100">จำนวนฟอร์มล่าสุด: <b>{stats.total}</b></div>
-        <div className="bg-white p-4 rounded-xl border border-sky-100">ฟอร์มที่เปิดใช้งาน: <b>{stats.active}</b></div>
+        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-sky-100 dark:border-slate-700">จำนวนฟอร์มล่าสุด: <b>{stats.total}</b></div>
+        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-sky-100 dark:border-slate-700">ฟอร์มที่เปิดใช้งาน: <b>{stats.active}</b></div>
       </div>
 
-      <div className="bg-white border border-sky-100 rounded-xl p-4 mb-4 flex flex-wrap gap-3 items-end">
+      <div className="bg-white dark:bg-slate-900 border border-sky-100 dark:border-slate-700 rounded-xl p-4 mb-4 flex flex-wrap gap-3 items-end">
         <label className="text-sm">ค้นหาชื่อฟอร์ม
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="พิมพ์ชื่อฟอร์ม" className="block border rounded px-3 py-2 mt-1 min-w-56" />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="พิมพ์ชื่อฟอร์ม" className="block border border-sky-200 dark:border-slate-600 rounded px-3 py-2 mt-1 min-w-56 dark:bg-slate-800" />
         </label>
 
         <label className="text-sm">สถานะ
-          <select value={status} onChange={(e) => setStatus(e.target.value as "all" | "active" | "inactive")} className="block border rounded px-3 py-2 mt-1">
+          <select value={status} onChange={(e) => setStatus(e.target.value as "all" | "active" | "inactive")} className="block border border-sky-200 dark:border-slate-600 rounded px-3 py-2 mt-1 dark:bg-slate-800">
             <option value="all">ทั้งหมด</option>
             <option value="active">เปิดใช้งาน</option>
             <option value="inactive">ปิดใช้งาน</option>
@@ -133,20 +133,20 @@ export default function DashboardPage() {
         </label>
 
         <label className="text-sm">จำนวนล่าสุด
-          <select value={limit} onChange={(e) => setLimit(Number(e.target.value))} className="block border rounded px-3 py-2 mt-1">
+          <select value={limit} onChange={(e) => setLimit(Number(e.target.value))} className="block border border-sky-200 dark:border-slate-600 rounded px-3 py-2 mt-1 dark:bg-slate-800">
             {PAGE_LIMITS.map((v) => <option key={v} value={v}>{v}</option>)}
           </select>
         </label>
 
         <label className="text-sm">เรียงตาม
-          <select value={sortField} onChange={(e) => setSortField(e.target.value as SortField)} className="block border rounded px-3 py-2 mt-1">
+          <select value={sortField} onChange={(e) => setSortField(e.target.value as SortField)} className="block border border-sky-200 dark:border-slate-600 rounded px-3 py-2 mt-1 dark:bg-slate-800">
             <option value="createdAt">วันที่สร้าง</option>
             <option value="title">ชื่อฟอร์ม</option>
           </select>
         </label>
 
         <label className="text-sm">ลำดับ
-          <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value as SortOrder)} className="block border rounded px-3 py-2 mt-1">
+          <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value as SortOrder)} className="block border border-sky-200 dark:border-slate-600 rounded px-3 py-2 mt-1 dark:bg-slate-800">
             <option value="desc">มากไปน้อย</option>
             <option value="asc">น้อยไปมาก</option>
           </select>
@@ -155,9 +155,9 @@ export default function DashboardPage() {
         <button onClick={load} className="px-4 py-2 rounded bg-sky-600 text-white">ค้นหา</button>
       </div>
 
-      <div className="bg-white border border-sky-100 rounded-xl overflow-x-auto">
+      <div className="bg-white dark:bg-slate-900 border border-sky-100 dark:border-slate-700 rounded-xl overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-sky-50 text-sky-900">
+          <thead className="bg-sky-50 dark:bg-slate-800 text-sky-900 dark:text-sky-200">
             <tr>
               <th className="text-left p-3">ลำดับ</th>
               <th className="text-left p-3">ชื่อฟอร์ม</th>
@@ -173,8 +173,8 @@ export default function DashboardPage() {
               <tr key={f.id} className="border-t">
                 <td className="p-3">{i + 1}</td>
                 <td className="p-3">
-                  <p className="font-semibold text-sky-900">{f.title}</p>
-                  <p className="text-gray-500">{f.description || "-"}</p>
+                  <p className="font-semibold text-sky-900 dark:text-sky-100">{f.title}</p>
+                  <p className="text-gray-500 dark:text-slate-400">{f.description || "-"}</p>
                 </td>
                 <td className="p-3">
                   <span className={`inline-flex px-2 py-1 rounded-full text-xs font-semibold ${f.isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
@@ -198,7 +198,7 @@ export default function DashboardPage() {
             ))}
             {!forms.length && (
               <tr>
-                <td className="p-6 text-center text-gray-500" colSpan={7}>{loading ? "กำลังโหลด..." : "ไม่พบข้อมูล"}</td>
+                <td className="p-6 text-center text-gray-500 dark:text-slate-400" colSpan={7}>{loading ? "กำลังโหลด..." : "ไม่พบข้อมูล"}</td>
               </tr>
             )}
           </tbody>
