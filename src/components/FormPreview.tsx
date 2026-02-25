@@ -5,13 +5,14 @@ import Toast, { useToast } from "./ui/Toast";
 
 type QuestionType = "short" | "long" | "multiple" | "checkbox" | "dropdown" | "scale" | "date" | "time";
 type Question = { id: string; text: string; type: QuestionType; options: string[]; required: boolean; order: number };
-type Form = { id: string; title: string; description: string; questions: Question[] };
+type Form = { id: string; title: string; description: string; isActive: boolean; startAt: string | null; endAt: string | null; questions: Question[] };
 
 export default function FormPreview({ formId }: { formId: string }) {
   const { msg, show } = useToast();
   const [data, setData] = useState<Form | null>(null);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
+  const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -20,6 +21,7 @@ export default function FormPreview({ formId }: { formId: string }) {
       if (!res.ok) return setLoading(false);
       setData(await res.json());
       setAnswers({});
+      setSubmitted(false);
       setLoading(false);
     })();
   }, [formId]);
@@ -31,13 +33,54 @@ export default function FormPreview({ formId }: { formId: string }) {
     const missing = questions.filter((q) => q.required && !String(answers[q.id] ?? "").trim());
     if (missing.length) return show("กรุณากรอกคำถามที่จำเป็นให้ครบ");
     const res = await fetch(`/api/forms/${formId}/submit`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ answers }) });
-    if (!res.ok) return show("เกิดข้อผิดพลาดในการส่ง");
-    show("✅ ส่งคำตอบเรียบร้อยแล้ว!");
+    if (!res.ok) {
+      const payload = await res.json().catch(() => ({}));
+      if (payload?.error === "form_inactive") {
+        return show("แบบฟอร์มนี้ปิดรับคำตอบแล้ว");
+      }
+      return show("เกิดข้อผิดพลาดในการส่ง");
+    }
+    setSubmitted(true);
     setAnswers({});
   }
 
+  const isAcceptingResponses = useMemo(() => {
+    if (!data) return false;
+    const now = new Date();
+    if (!data.isActive) return false;
+    if (data.startAt && now < new Date(data.startAt)) return false;
+    if (data.endAt && now > new Date(data.endAt)) return false;
+    return true;
+  }, [data]);
+
   if (loading) return <div className="min-h-screen flex items-center justify-center text-gray-600">กำลังโหลด...</div>;
   if (!data) return <div className="p-6 text-center text-gray-600">ไม่พบแบบฟอร์ม</div>;
+
+  if (submitted) {
+    return (
+      <div className="min-h-screen py-6">
+        <main className="max-w-3xl mx-auto px-4">
+          <div className="bg-white rounded-2xl shadow-sm border border-green-100 border-t-8 border-t-green-500 p-8 text-center">
+            <h2 className="text-2xl font-semibold text-green-700 mb-3">เราได้บันทึกคำตอบของคุณไว้แล้ว</h2>
+            <p className="text-slate-600">ขอบคุณที่สละเวลาในการตอบแบบฟอร์มนี้</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (!isAcceptingResponses) {
+    return (
+      <div className="min-h-screen py-6">
+        <main className="max-w-3xl mx-auto px-4">
+          <div className="bg-white rounded-2xl shadow-sm border border-amber-100 border-t-8 border-t-amber-500 p-8 text-center">
+            <h2 className="text-2xl font-semibold text-amber-700 mb-3">แบบฟอร์ม "{data.title}" นี้ไม่รับคำตอบแล้ว</h2>
+            <p className="text-slate-600">โปรดลองติดต่อเจ้าของแบบฟอร์ม หากคิดว่าเกิดความผิดพลาด</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen py-6">
