@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
+import { formatThaiDateTime } from "@/lib/datetime";
 
 function csvEscape(value: string) {
   const v = String(value ?? "");
@@ -41,7 +42,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ formId: 
   const headers = ["submittedAt", ...form.questions.map((q) => q.text)];
   const rows = submissions.map((s) => {
     const byQ = new Map(s.answers.map((a) => [a.questionId, a.value]));
-    return [s.createdAt.toISOString(), ...form.questions.map((q) => byQ.get(q.id) || "")];
+    return [formatThaiDateTime(s.createdAt), ...form.questions.map((q) => byQ.get(q.id) || "")];
   });
 
   if (format === "xlsx") {

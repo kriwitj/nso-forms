@@ -16,7 +16,8 @@ export default function AdminPage() {
     if (!u.ok) return (window.location.href = "/login");
     setUsers(await u.json());
     const f = await fetch("/api/forms?limit=100&includeDeleted=true", { cache: "no-store" });
-    setForms(await f.json());
+    const payload = await f.json();
+    setForms(Array.isArray(payload) ? payload : payload.items || []);
   }
 
   useEffect(() => {

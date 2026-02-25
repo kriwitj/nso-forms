@@ -2,6 +2,7 @@
 
 import Breadcrumbs from "@/components/Breadcrumbs";
 import Toast, { useToast } from "@/components/ui/Toast";
+import { formatThaiDateTime, toThaiDatetimeLocal } from "@/lib/datetime";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
@@ -14,6 +15,11 @@ type Submission = {
 };
 
 type Tab = "edit" | "preview" | "responses";
+
+function toBangkokIso(datetimeLocal: string) {
+  if (!datetimeLocal) return null;
+  return `${datetimeLocal}:00+07:00`;
+}
 
 const QUESTION_TYPES: { value: QuestionType; label: string }[] = [
   { value: "short", label: "📝 คำตอบสั้น" },
@@ -44,8 +50,8 @@ export default function FormBuilder({ formId }: { formId: string }) {
     setTitle(data.title);
     setDescription(data.description || "");
     setIsActive(data.isActive);
-    setStartAt(data.startAt ? data.startAt.slice(0, 16) : "");
-    setEndAt(data.endAt ? data.endAt.slice(0, 16) : "");
+    setStartAt(data.startAt ? toThaiDatetimeLocal(data.startAt) : "");
+    setEndAt(data.endAt ? toThaiDatetimeLocal(data.endAt) : "");
     setQuestions((data.questions || []).sort((a: Question, b: Question) => a.order - b.order));
   }
 
@@ -64,7 +70,7 @@ export default function FormBuilder({ formId }: { formId: string }) {
     const response = await fetch(`/api/forms/${formId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, description, isActive, startAt: startAt || null, endAt: endAt || null, formData: { title, description, questions } }),
+      body: JSON.stringify({ title, description, isActive, startAt: toBangkokIso(startAt), endAt: toBangkokIso(endAt), formData: { title, description, questions } }),
     });
     if (!response.ok) {
       show("บันทึกไม่สำเร็จ");
@@ -289,7 +295,7 @@ export default function FormBuilder({ formId }: { formId: string }) {
 
           {submissions.map((s, i) => {
             const ordered = [...s.answers].sort((a, b) => a.question.order - b.question.order);
-            return <div key={s.id} className="bg-white rounded-xl shadow-sm p-6 mb-4"><div className="flex justify-between mb-4"><span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm">คำตอบ #{submissions.length - i}</span><span className="text-sm text-gray-500">{new Date(s.createdAt).toLocaleString("th-TH")}</span></div>{ordered.map((a) => <div key={a.id} className="mb-2"><p className="text-sm text-gray-500">{a.question.text}</p><p className="font-medium">{a.value || <span className="text-gray-400">ไม่ได้ตอบ</span>}</p></div>)}</div>;
+            return <div key={s.id} className="bg-white rounded-xl shadow-sm p-6 mb-4"><div className="flex justify-between mb-4"><span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm">คำตอบ #{submissions.length - i}</span><span className="text-sm text-gray-500">{formatThaiDateTime(s.createdAt)}</span></div>{ordered.map((a) => <div key={a.id} className="mb-2"><p className="text-sm text-gray-500">{a.question.text}</p><p className="font-medium">{a.value || <span className="text-gray-400">ไม่ได้ตอบ</span>}</p></div>)}</div>;
           })}
         </section>
       )}

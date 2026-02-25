@@ -22,6 +22,7 @@ export async function POST(req: Request) {
       name,
       passwordHash: hashPassword(password),
       role: totalUsers === 0 ? "ADMIN" : "USER",
+      themePreference: "SYSTEM",
       isApproved: totalUsers === 0,
     },
   });

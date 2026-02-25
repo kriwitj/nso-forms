@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { formatThaiDateTime } from "@/lib/datetime";
 
 type Submission = {
   id: string;
@@ -69,13 +70,7 @@ export default function ResponsesView({ formId }: { formId: string }) {
 
         <div className="space-y-4">
           {subs.map((s, idx) => {
-            const dateStr = new Date(s.createdAt).toLocaleString("th-TH", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-            });
+            const dateStr = formatThaiDateTime(s.createdAt);
 
             const ordered = [...s.answers].sort((a, b) => a.question.order - b.question.order);
 

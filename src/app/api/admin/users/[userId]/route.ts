@@ -15,6 +15,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ userId
     data: {
       name: typeof body.name === "string" ? body.name.trim() : undefined,
       role: body.role === "ADMIN" || body.role === "USER" ? body.role : undefined,
+      themePreference: body.themePreference === "SYSTEM" || body.themePreference === "LIGHT" || body.themePreference === "DARK" ? body.themePreference : undefined,
       isApproved: typeof body.isApproved === "boolean" ? body.isApproved : undefined,
       passwordHash: typeof body.password === "string" && body.password.length >= 6 ? hashPassword(body.password) : undefined,
     },

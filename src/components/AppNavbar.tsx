@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
-type Me = { id: string; name: string; role: string; isApproved: boolean } | null;
+type Me = { id: string; name: string; role: string; isApproved: boolean; themePreference?: "SYSTEM" | "LIGHT" | "DARK" } | null;
 
 export default function AppNavbar() {
   const pathname = usePathname();
@@ -22,7 +22,7 @@ export default function AppNavbar() {
   const menus = useMemo(() => {
     const common = [{ label: "หน้าแรก", href: "/" }];
     if (!me) return [...common, { label: "เข้าสู่ระบบ", href: "/login" }, { label: "สมัครสมาชิก", href: "/register" }];
-    const userMenus = [...common, { label: "แดชบอร์ด", href: "/dashboard" }];
+    const userMenus = [...common, { label: "แดชบอร์ด", href: "/dashboard" }, { label: "โปรไฟล์", href: "/profile" }];
     if (me.role === "ADMIN") userMenus.push({ label: "จัดการระบบ", href: "/admin" });
     return userMenus;
   }, [me]);
@@ -34,19 +34,19 @@ export default function AppNavbar() {
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b border-sky-100 bg-white/90 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-sky-100 dark:border-slate-700 bg-white/90 dark:bg-slate-900/90 backdrop-blur">
       <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
-        <Link href="/" className="font-bold text-sky-700 text-xl">nso-forms</Link>
+        <Link href="/" className="font-bold text-sky-700 dark:text-sky-300 text-xl">nso-forms</Link>
         <nav className="flex items-center gap-2">
           {menus.map((m) => (
-            <Link key={m.href} href={m.href} className={`px-3 py-2 rounded-lg text-sm ${pathname === m.href ? "bg-sky-100 text-sky-800" : "text-sky-700 hover:bg-sky-50"}`}>
+            <Link key={m.href} href={m.href} className={`px-3 py-2 rounded-lg text-sm ${pathname === m.href ? "bg-sky-100 text-sky-800 dark:bg-slate-800 dark:text-sky-300" : "text-sky-700 dark:text-sky-200 hover:bg-sky-50 dark:hover:bg-slate-800"}`}>
               {m.label}
             </Link>
           ))}
           {me && (
             <>
-              <span className="hidden md:block text-sm text-slate-500">{me.name} ({me.role})</span>
-              <button onClick={logout} className="px-3 py-2 rounded-lg text-sm border border-sky-200 text-sky-700 hover:bg-sky-50">ออกจากระบบ</button>
+              <span className="hidden md:block text-sm text-slate-500 dark:text-slate-300">{me.name} ({me.role})</span>
+              <button onClick={logout} className="px-3 py-2 rounded-lg text-sm border border-sky-200 dark:border-slate-600 text-sky-700 dark:text-sky-200 hover:bg-sky-50 dark:hover:bg-slate-800">ออกจากระบบ</button>
             </>
           )}
         </nav>

@@ -4,3 +4,4 @@
 
 * { font-family: 'Sarabun', sans-serif; box-sizing: border-box; }
 body { background: linear-gradient(180deg, #eff6ff 0%, #f8fbff 100%); }
+html.dark body { background: linear-gradient(180deg, #020617 0%, #0b1220 100%); }

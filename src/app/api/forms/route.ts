@@ -49,16 +49,28 @@ export async function GET(req: Request) {
     where.isActive = false;
   }
 
-  const forms = await prisma.form.findMany({
-    where,
-    orderBy: { [sortField]: sortOrder },
-    take: limit,
-    include: {
-      _count: { select: { submissions: true } },
+  const baseWhere = { ...where };
+
+  const [totalVisible, activeVisible, forms] = await Promise.all([
+    prisma.form.count({ where: baseWhere }),
+    prisma.form.count({ where: { ...baseWhere, isActive: true } }),
+    prisma.form.findMany({
+      where,
+      orderBy: { [sortField]: sortOrder },
+      take: limit,
+      include: {
+        _count: { select: { submissions: true } },
+      },
+    }),
+  ]);
+
+  return NextResponse.json({
+    items: forms,
+    summary: {
+      totalVisible,
+      activeVisible,
     },
   });
-
-  return NextResponse.json(forms);
 }
 
 export async function POST(req: Request) {

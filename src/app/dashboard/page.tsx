@@ -2,6 +2,7 @@
 
 import Breadcrumbs from "@/components/Breadcrumbs";
 import Toast, { useToast } from "@/components/ui/Toast";
+import { formatThaiDateTime } from "@/lib/datetime";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
@@ -23,6 +24,7 @@ const PAGE_LIMITS = [10, 20, 50, 100];
 
 export default function DashboardPage() {
   const [forms, setForms] = useState<Form[]>([]);
+  const [summary, setSummary] = useState({ totalVisible: 0, activeVisible: 0 });
   const [loading, setLoading] = useState(false);
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
@@ -46,7 +48,9 @@ export default function DashboardPage() {
       const res = await fetch(`/api/forms?${qs.toString()}`, { cache: "no-store" });
       if (res.status === 401 || res.status === 403) return (window.location.href = "/login");
       if (!res.ok) throw new Error("โหลดฟอร์มไม่สำเร็จ");
-      setForms(await res.json());
+      const payload = await res.json();
+      setForms(Array.isArray(payload) ? payload : payload.items || []);
+      setSummary(Array.isArray(payload) ? { totalVisible: payload.length, activeVisible: payload.filter((f: Form) => f.isActive).length } : payload.summary || { totalVisible: 0, activeVisible: 0 });
     } catch {
       show("เกิดข้อผิดพลาดในการโหลดข้อมูล");
     } finally {
@@ -58,13 +62,7 @@ export default function DashboardPage() {
     void load();
   }, [limit, sortField, sortOrder, status]);
 
-  const stats = useMemo(
-    () => ({
-      total: forms.length,
-      active: forms.filter((f) => f.isActive).length,
-    }),
-    [forms],
-  );
+  const stats = useMemo(() => ({ total: summary.totalVisible, active: summary.activeVisible }), [summary]);
 
   async function createForm() {
     try {
@@ -184,8 +182,8 @@ export default function DashboardPage() {
                   </span>
                 </td>
                 <td className="p-3">{f._count?.submissions ?? 0}</td>
-                <td className="p-3">{new Date(f.createdAt).toLocaleString("th-TH")}</td>
-                <td className="p-3">{f.startAt || f.endAt ? `${f.startAt ? new Date(f.startAt).toLocaleString("th-TH") : "-"} - ${f.endAt ? new Date(f.endAt).toLocaleString("th-TH") : "-"}` : "ไม่กำหนด"}</td>
+                <td className="p-3">{formatThaiDateTime(f.createdAt)}</td>
+                <td className="p-3">{f.startAt || f.endAt ? `${f.startAt ? formatThaiDateTime(f.startAt) : "-"} - ${f.endAt ? formatThaiDateTime(f.endAt) : "-"}` : "ไม่กำหนด"}</td>
                 <td className="p-3">
                   <div className="flex flex-wrap gap-2">
                     <Link className="px-3 py-1 border rounded" href={`/forms/${f.id}/builder`}>แก้ไข</Link>

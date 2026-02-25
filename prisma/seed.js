@@ -18,6 +18,7 @@ async function main() {
       name,
       passwordHash: hashPassword(password),
       role: "ADMIN",
+      themePreference: "SYSTEM",
       isApproved: true,
     },
     create: {
@@ -25,6 +26,7 @@ async function main() {
       name,
       passwordHash: hashPassword(password),
       role: "ADMIN",
+      themePreference: "SYSTEM",
       isApproved: true,
     },
   });

@@ -1,6 +1,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import AppNavbar from "@/components/AppNavbar";
+import ThemeController from "@/components/ThemeController";
 
 export const metadata: Metadata = {
   title: "NSO Forms",
@@ -15,7 +16,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
       </head>
-      <body className="h-full bg-sky-50 text-slate-800">
+      <body className="h-full bg-sky-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100">
+        <ThemeController />
         <AppNavbar />
         {children}
       </body>

@@ -22,6 +22,7 @@ export async function POST(req: Request) {
   const password = String(body.password ?? "");
   const role = body.role === "ADMIN" ? "ADMIN" : "USER";
   const isApproved = body.isApproved !== false;
+  const themePreference = body.themePreference === "DARK" || body.themePreference === "LIGHT" ? body.themePreference : "SYSTEM";
 
   if (!email || !name || password.length < 6) {
     return NextResponse.json({ error: "invalid_payload" }, { status: 400 });
@@ -32,6 +33,7 @@ export async function POST(req: Request) {
       email,
       name,
       role,
+      themePreference,
       isApproved,
       passwordHash: hashPassword(password),
     },
