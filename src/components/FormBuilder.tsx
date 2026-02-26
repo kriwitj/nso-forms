@@ -81,6 +81,16 @@ export default function FormBuilder({ formId }: { formId: string }) {
 
   async function publishForm() {
     const publicUrl = `${window.location.origin}/f/${formId}`;
+    const response = await fetch(`/api/forms/${formId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ isPublished: true }),
+    });
+
+    if (!response.ok) {
+      show("เผยแพร่ไม่สำเร็จ");
+      return;
+    }
 
     try {
       if (navigator.clipboard?.writeText) {

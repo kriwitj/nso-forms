@@ -15,6 +15,17 @@ export default function FormPreview({ formId }: { formId: string }) {
   const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
+    const hadDark = document.documentElement.classList.contains("dark");
+    document.documentElement.classList.remove("dark");
+
+    return () => {
+      if (hadDark) {
+        document.documentElement.classList.add("dark");
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     (async () => {
       setLoading(true);
       const res = await fetch(`/api/forms/${formId}`, { cache: "no-store" });

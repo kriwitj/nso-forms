@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireUser } from "@/lib/auth";
+import { getCurrentUser, requireUser } from "@/lib/auth";
 
 async function canManage(formId: string, userId: string, role: string) {
   const form = await prisma.form.findUnique({ where: { id: formId } });
@@ -21,6 +21,15 @@ export async function GET(_req: Request, { params }: { params: Promise<{ formId:
   });
 
   if (!full) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  if (!full.isPublished) {
+    const user = await getCurrentUser();
+    if (!user) return NextResponse.json({ error: "forbidden" }, { status: 403 });
+    if (user.role !== "ADMIN" && full.ownerId !== user.id) {
+      return NextResponse.json({ error: "forbidden" }, { status: 403 });
+    }
+  }
+
   return NextResponse.json(full);
 }
 
@@ -40,6 +49,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ formId
       title: typeof body.title === "string" ? body.title : undefined,
       description: typeof body.description === "string" ? body.description : undefined,
       formData: typeof body.formData === "object" && body.formData !== null ? body.formData : undefined,
+      isPublished: typeof body.isPublished === "boolean" ? body.isPublished : undefined,
       isActive: typeof body.isActive === "boolean" ? body.isActive : undefined,
       startAt: body.startAt ? new Date(body.startAt) : body.startAt === null ? null : undefined,
       endAt: body.endAt ? new Date(body.endAt) : body.endAt === null ? null : undefined,

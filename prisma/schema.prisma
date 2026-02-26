@@ -38,6 +38,7 @@ model Form {
   title       String     @default("แบบฟอร์มใหม่")
   description String     @default("")
   formData    Json?
+  isPublished Boolean    @default(false)
   isActive    Boolean    @default(true)
   deletedAt   DateTime?
   startAt     DateTime?
