@@ -1,28 +1,90 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireUser } from "@/lib/auth";
 
-export async function GET() {
-  let form = await prisma.form.findFirst({ orderBy: { createdAt: "asc" } });
-  if (!form) {
-    form = await prisma.form.create({
-      data: { title: "แบบฟอร์มใหม่", description: "" },
-    });
-  }
-  return NextResponse.json(form);
+const ALLOWED_LIMITS = new Set([10, 20, 50, 100]);
+
+type SortField = "createdAt" | "title";
+type SortOrder = "asc" | "desc";
+
+function parseLimit(value: string | null) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || !ALLOWED_LIMITS.has(parsed)) return 10;
+  return parsed;
 }
 
-export async function PATCH(req: Request) {
-  const body = await req.json();
-  let form = await prisma.form.findFirst({ orderBy: { createdAt: "asc" } });
-  if (!form) {
-    form = await prisma.form.create({ data: { title: "แบบฟอร์มใหม่" } });
+function parseSortField(value: string | null): SortField {
+  return value === "title" ? "title" : "createdAt";
+}
+
+function parseSortOrder(value: string | null): SortOrder {
+  return value === "asc" ? "asc" : "desc";
+}
+
+export async function GET(req: Request) {
+  const auth = await requireUser();
+  if (auth.error) return auth.error;
+
+  const { searchParams } = new URL(req.url);
+  const limit = parseLimit(searchParams.get("limit"));
+  const sortField = parseSortField(searchParams.get("sortField"));
+  const sortOrder = parseSortOrder(searchParams.get("sortOrder"));
+  const search = (searchParams.get("search") || "").trim();
+  const status = searchParams.get("status");
+  const includeDeleted = auth.user.role === "ADMIN" && searchParams.get("includeDeleted") === "true";
+
+  const where: Record<string, unknown> = auth.user.role === "ADMIN" ? {} : { ownerId: auth.user.id };
+
+  if (!includeDeleted) {
+    where.deletedAt = null;
   }
-  const updated = await prisma.form.update({
-    where: { id: form.id },
-    data: {
-      title: typeof body.title === "string" ? body.title : undefined,
-      description: typeof body.description === "string" ? body.description : undefined,
+
+  if (search) {
+    where.title = { contains: search, mode: "insensitive" };
+  }
+
+  if (status === "active") {
+    where.isActive = true;
+  } else if (status === "inactive") {
+    where.isActive = false;
+  }
+
+  const baseWhere = { ...where };
+
+  const [totalVisible, activeVisible, forms] = await Promise.all([
+    prisma.form.count({ where: baseWhere }),
+    prisma.form.count({ where: { ...baseWhere, isActive: true } }),
+    prisma.form.findMany({
+      where,
+      orderBy: { [sortField]: sortOrder },
+      take: limit,
+      include: {
+        _count: { select: { submissions: true } },
+      },
+    }),
+  ]);
+
+  return NextResponse.json({
+    items: forms,
+    summary: {
+      totalVisible,
+      activeVisible,
     },
   });
-  return NextResponse.json(updated);
+}
+
+export async function POST(req: Request) {
+  const auth = await requireUser();
+  if (auth.error) return auth.error;
+
+  const body = await req.json();
+  const form = await prisma.form.create({
+    data: {
+      ownerId: auth.user.id,
+      title: body.title || "แบบฟอร์มใหม่",
+      description: body.description || "",
+    },
+  });
+
+  return NextResponse.json(form);
 }
