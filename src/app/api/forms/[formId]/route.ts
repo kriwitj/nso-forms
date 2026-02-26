@@ -11,6 +11,8 @@ async function canManage(formId: string, userId: string, role: string) {
 }
 
 export async function GET(_req: Request, { params }: { params: Promise<{ formId: string }> }) {
+  const auth = await requireUser();
+  if (auth.error) return auth.error;
   const { formId } = await params;
 
   const full = await prisma.form.findFirst({
