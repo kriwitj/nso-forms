@@ -189,7 +189,7 @@ export default function DashboardPage() {
                     <Link className="px-3 py-1 border rounded" href={`/forms/${f.id}/builder`}>แก้ไข</Link>
                     <Link className="px-3 py-1 border rounded" href={`/f/${f.id}`}>ตอบ</Link>
                     <a className="px-3 py-1 border rounded" href={`/api/forms/${f.id}/export?format=csv`}>CSV</a>
-                    <a className="px-3 py-1 border rounded" href={`/api/forms/${f.id}/export?format=xlsx`}>XLSX</a>
+                    <a className="px-3 py-1 border rounded" href={`/api/forms/${f.id}/export?format=xls`}>Excel</a>
                     <button className="px-3 py-1 border rounded" onClick={() => toggle(f)}>{f.isActive ? "ปิด" : "เปิด"}</button>
                     <button className="px-3 py-1 rounded bg-red-50 text-red-700" onClick={() => softDelete(f)}>ลบ</button>
                   </div>

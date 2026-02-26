@@ -24,7 +24,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ formId: 
   if (auth.error) return auth.error;
 
   const { searchParams } = new URL(req.url);
-  const format = searchParams.get("format") === "xlsx" ? "xlsx" : "csv";
+  const requestedFormat = searchParams.get("format");
+  const format = requestedFormat === "xlsx" || requestedFormat === "xls" ? "excel" : "csv";
 
   const { formId } = await params;
   const form = await prisma.form.findFirst({ where: { id: formId, deletedAt: null }, include: { questions: { orderBy: { order: "asc" } } } });
@@ -45,7 +46,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ formId: 
     return [formatThaiDateTime(s.createdAt), ...form.questions.map((q) => byQ.get(q.id) || "")];
   });
 
-  if (format === "xlsx") {
+  if (format === "excel") {
     const tableRows = [headers, ...rows]
       .map((row) => `<tr>${row.map((cell) => `<td>${htmlEscape(String(cell))}</td>`).join("")}</tr>`)
       .join("");
@@ -55,7 +56,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ formId: 
     return new NextResponse(html, {
       headers: {
         "Content-Type": "application/vnd.ms-excel; charset=utf-8",
-        "Content-Disposition": `attachment; filename=form-${formId}.xlsx`,
+        "Content-Disposition": `attachment; filename=form-${formId}.xls`,
       },
     });
   }

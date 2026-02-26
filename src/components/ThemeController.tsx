@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 type ThemePreference = "SYSTEM" | "LIGHT" | "DARK";
 
@@ -17,7 +18,14 @@ function applyTheme(themePreference: ThemePreference) {
 }
 
 export default function ThemeController() {
+  const pathname = usePathname();
+
   useEffect(() => {
+    if (pathname?.startsWith("/f/")) {
+      document.documentElement.classList.remove("dark");
+      return;
+    }
+
     let alive = true;
     const media = window.matchMedia("(prefers-color-scheme: dark)");
 
@@ -48,7 +56,7 @@ export default function ThemeController() {
       alive = false;
       cleanup?.();
     };
-  }, []);
+  }, [pathname]);
 
   return null;
 }
