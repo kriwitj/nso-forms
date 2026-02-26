@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireUser } from "@/lib/auth";
 
 export async function POST(req: Request, { params }: { params: Promise<{ formId: string }> }) {
+  const auth = await requireUser();
+  if (auth.error) return auth.error;
+
   const { formId } = await params;
   const body = await req.json();
   const answers = body?.answers ?? {};
