@@ -28,7 +28,7 @@ export default function FormPreview({ formId }: { formId: string }) {
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const res = await fetch(`/api/forms/${formId}`, { cache: "no-store" });
+      const res = await fetch(`/api/public/forms/${formId}`, { cache: "no-store" });
       if (!res.ok) return setLoading(false);
       setData(await res.json());
       setAnswers({});
@@ -43,7 +43,7 @@ export default function FormPreview({ formId }: { formId: string }) {
     if (!data) return;
     const missing = questions.filter((q) => q.required && !String(answers[q.id] ?? "").trim());
     if (missing.length) return show("กรุณากรอกคำถามที่จำเป็นให้ครบ");
-    const res = await fetch(`/api/forms/${formId}/submit`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ answers }) });
+    const res = await fetch(`/api/public/forms/${formId}/submit`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ answers }) });
     if (!res.ok) {
       const payload = await res.json().catch(() => ({}));
       if (payload?.error === "form_inactive") {
