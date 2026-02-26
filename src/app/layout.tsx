@@ -1,9 +1,11 @@
 import "./globals.css";
 import type { Metadata } from "next";
+import AppNavbar from "@/components/AppNavbar";
+import ThemeController from "@/components/ThemeController";
 
 export const metadata: Metadata = {
-  title: "Form Builder",
-  description: "Next.js + Postgres form builder",
+  title: "NSO Forms",
+  description: "ระบบจัดการแบบฟอร์มออนไลน์สำหรับองค์กร",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -12,12 +14,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
+        <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
       </head>
-      <body className="h-full bg-purple-50">{children}</body>
+      <body className="h-full bg-sky-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100">
+        <ThemeController />
+        <AppNavbar />
+        {children}
+      </body>
     </html>
   );
 }

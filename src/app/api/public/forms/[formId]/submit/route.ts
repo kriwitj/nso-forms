@@ -6,9 +6,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ formId:
   const body = await req.json();
   const answers = body?.answers ?? {};
 
-  const form = await prisma.form.findFirst({ where: { id: formId, deletedAt: null } });
+  const form = await prisma.form.findFirst({ where: { id: formId, deletedAt: null, isPublished: true } });
   if (!form) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  if (!form.isPublished) return NextResponse.json({ error: "not_published" }, { status: 403 });
+
   const now = new Date();
   if (!form.isActive || (form.startAt && now < form.startAt) || (form.endAt && now > form.endAt)) {
     return NextResponse.json({ error: "form_inactive" }, { status: 400 });
