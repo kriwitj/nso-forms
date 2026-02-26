@@ -79,6 +79,21 @@ export default function FormBuilder({ formId }: { formId: string }) {
     show("บันทึกฟอร์มเรียบร้อย");
   }
 
+  async function publishForm() {
+    const publicUrl = `${window.location.origin}/f/${formId}`;
+
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(publicUrl);
+        show("เผยแพร่แล้ว: คัดลอกลิงก์สำหรับตอบแบบฟอร์มเรียบร้อย");
+      } else {
+        show(`ลิงก์สำหรับตอบแบบฟอร์ม: ${publicUrl}`);
+      }
+    } catch {
+      show(`ลิงก์สำหรับตอบแบบฟอร์ม: ${publicUrl}`);
+    }
+  }
+
   async function addQuestion(type: QuestionType) {
     const options = ["multiple", "checkbox", "dropdown"].includes(type)
       ? ["ตัวเลือก 1", "ตัวเลือก 2", "ตัวเลือก 3"]
@@ -195,6 +210,7 @@ export default function FormBuilder({ formId }: { formId: string }) {
               <label><input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} /> เปิดใช้งาน</label>
               <label>เริ่ม <input type="datetime-local" value={startAt} onChange={(e) => setStartAt(e.target.value)} className="border p-1 rounded" /></label>
               <label>สิ้นสุด <input type="datetime-local" value={endAt} onChange={(e) => setEndAt(e.target.value)} className="border p-1 rounded" /></label>
+              <button onClick={publishForm} className="px-3 py-1 bg-sky-600 text-white rounded">เผยแพร่</button>
               <button onClick={saveMeta} className="px-3 py-1 bg-purple-600 text-white rounded">บันทึก</button>
             </div>
           </div>

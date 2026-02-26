@@ -33,6 +33,10 @@ export default function AppNavbar() {
     router.refresh();
   }
 
+  if (pathname?.startsWith("/f/")) {
+    return null;
+  }
+
   return (
     <header className="sticky top-0 z-50 border-b border-sky-100 dark:border-slate-700 bg-white/90 dark:bg-slate-900/90 backdrop-blur">
       <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
