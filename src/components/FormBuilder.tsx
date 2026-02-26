@@ -179,15 +179,15 @@ export default function FormBuilder({ formId }: { formId: string }) {
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <h1 className="text-xl font-semibold text-gray-800 dark:text-slate-100">{title}</h1>
             <div className="flex gap-2">
-              <button onClick={() => setActiveTab("preview")} className="px-3 py-2 text-purple-600 hover:bg-purple-50 rounded-lg">👁️ ดูตัวอย่าง</button>
-              <button onClick={() => setActiveTab("responses")} className="px-3 py-2 text-purple-600 hover:bg-purple-50 rounded-lg">
+              <button onClick={() => setActiveTab("preview")} className="px-3 py-2 text-purple-600 dark:text-purple-200 hover:bg-purple-50 dark:hover:bg-slate-800 rounded-lg">👁️ ดูตัวอย่าง</button>
+              <button onClick={() => setActiveTab("responses")} className="px-3 py-2 text-purple-600 dark:text-purple-200 hover:bg-purple-50 dark:hover:bg-slate-800 rounded-lg">
                 📊 คำตอบ <span className="bg-purple-100 dark:bg-purple-900/40 px-2 py-0.5 rounded-full text-sm">{submissions.length}</span>
               </button>
               <Link href={`/f/${formId}`} className="px-3 py-2 rounded-lg bg-purple-600 text-white">หน้าแบบฟอร์มจริง</Link>
             </div>
           </div>
 
-          <div className="flex gap-6 mt-4 border-b">
+          <div className="flex gap-6 mt-4 border-b border-slate-200 dark:border-slate-700">
             {tabs.map((t) => (
               <button
                 key={t.id}
@@ -208,8 +208,8 @@ export default function FormBuilder({ formId }: { formId: string }) {
             <input className="w-full text-gray-600 dark:text-slate-300 border-b-2 border-transparent hover:border-gray-200 focus:border-purple-500 outline-none pb-2" placeholder="คำอธิบายแบบฟอร์ม" value={description} onChange={(e) => setDescription(e.target.value)} />
             <div className="flex flex-wrap gap-4 items-center pt-2">
               <label><input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} /> เปิดใช้งาน</label>
-              <label>เริ่ม <input type="datetime-local" value={startAt} onChange={(e) => setStartAt(e.target.value)} className="border p-1 rounded" /></label>
-              <label>สิ้นสุด <input type="datetime-local" value={endAt} onChange={(e) => setEndAt(e.target.value)} className="border p-1 rounded" /></label>
+              <label>เริ่ม <input type="datetime-local" value={startAt} onChange={(e) => setStartAt(e.target.value)} className="border border-slate-300 dark:border-slate-600 dark:bg-slate-800 p-1 rounded" /></label>
+              <label>สิ้นสุด <input type="datetime-local" value={endAt} onChange={(e) => setEndAt(e.target.value)} className="border border-slate-300 dark:border-slate-600 dark:bg-slate-800 p-1 rounded" /></label>
               <button onClick={publishForm} className="px-3 py-1 bg-sky-600 text-white rounded">เผยแพร่</button>
               <button onClick={saveMeta} className="px-3 py-1 bg-purple-600 text-white rounded">บันทึก</button>
             </div>
@@ -223,7 +223,7 @@ export default function FormBuilder({ formId }: { formId: string }) {
                   <input className="flex-1 text-lg border-b-2 border-transparent hover:border-gray-200 focus:border-purple-500 outline-none" defaultValue={q.text} onBlur={(e) => updateQuestion(q.id, { text: e.target.value })} />
                 </div>
                 <div className="mb-3">
-                  <select className="px-3 py-2 bg-gray-50 rounded-lg border text-sm" value={q.type} onChange={(e) => updateQuestion(q.id, { type: e.target.value as QuestionType, options: [] })}>
+                  <select className="px-3 py-2 bg-gray-50 dark:bg-slate-800 rounded-lg border border-slate-300 dark:border-slate-600 text-sm" value={q.type} onChange={(e) => updateQuestion(q.id, { type: e.target.value as QuestionType, options: [] })}>
                     {QUESTION_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
                   </select>
                 </div>
@@ -250,7 +250,7 @@ export default function FormBuilder({ formId }: { formId: string }) {
                 <div className="flex justify-between border-t pt-3">
                   <label><input type="checkbox" checked={q.required} onChange={(e) => updateQuestion(q.id, { required: e.target.checked })} /> จำเป็น</label>
                   <div className="space-x-2">
-                    <button className="px-2 py-1 rounded bg-purple-50 text-purple-700 dark:text-purple-200" onClick={() => duplicateQuestion(q)}>คัดลอก</button>
+                    <button className="px-2 py-1 rounded bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-200" onClick={() => duplicateQuestion(q)}>คัดลอก</button>
                     <button className="px-2 py-1 rounded bg-red-50 text-red-700" onClick={() => removeQuestion(q.id)}>ลบ</button>
                   </div>
                 </div>
@@ -276,21 +276,21 @@ export default function FormBuilder({ formId }: { formId: string }) {
               <div key={q.id} className="bg-white dark:bg-slate-900 rounded-xl shadow-sm p-6">
                 <div className="flex items-start gap-3 mb-4">
                   <span className="bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-200 px-2 py-1 rounded text-sm font-medium">{idx + 1}</span>
-                  <h3 className="text-lg font-medium">{q.text}{q.required && <span className="text-red-500 ml-1">*</span>}</h3>
+                  <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100">{q.text}{q.required && <span className="text-red-500 ml-1">*</span>}</h3>
                 </div>
                 <div className="ml-9">
-                  {q.type === "short" && <input className="w-full px-4 py-3 border-2 rounded-lg" onChange={(e) => setAnswers((p) => ({ ...p, [q.id]: e.target.value }))} />}
-                  {q.type === "long" && <textarea className="w-full px-4 py-3 border-2 rounded-lg h-28" onChange={(e) => setAnswers((p) => ({ ...p, [q.id]: e.target.value }))} />}
-                  {q.type === "multiple" && q.options.map((opt) => <label key={opt} className="block p-2"><input type="radio" name={`q_${q.id}`} value={opt} onChange={(e) => setAnswers((p) => ({ ...p, [q.id]: e.target.value }))} /> {opt}</label>)}
-                  {q.type === "checkbox" && q.options.map((opt) => <label key={opt} className="block p-2"><input type="checkbox" onChange={(e) => {
+                  {q.type === "short" && <input className="w-full px-4 py-3 border-2 border-slate-300 dark:border-slate-600 dark:bg-slate-800 rounded-lg" onChange={(e) => setAnswers((p) => ({ ...p, [q.id]: e.target.value }))} />}
+                  {q.type === "long" && <textarea className="w-full px-4 py-3 border-2 border-slate-300 dark:border-slate-600 dark:bg-slate-800 rounded-lg h-28" onChange={(e) => setAnswers((p) => ({ ...p, [q.id]: e.target.value }))} />}
+                  {q.type === "multiple" && q.options.map((opt) => <label key={opt} className="block p-2 text-slate-800 dark:text-slate-200"><input type="radio" name={`q_${q.id}`} value={opt} onChange={(e) => setAnswers((p) => ({ ...p, [q.id]: e.target.value }))} /> {opt}</label>)}
+                  {q.type === "checkbox" && q.options.map((opt) => <label key={opt} className="block p-2 text-slate-800 dark:text-slate-200"><input type="checkbox" onChange={(e) => {
                     const set = new Set((answers[q.id] ?? "").split(",").map((s) => s.trim()).filter(Boolean));
                     if (e.target.checked) set.add(opt); else set.delete(opt);
                     setAnswers((p) => ({ ...p, [q.id]: Array.from(set).join(", ") }));
                   }} /> {opt}</label>)}
-                  {q.type === "dropdown" && <select className="w-full px-4 py-3 border-2 rounded-lg" onChange={(e) => setAnswers((p) => ({ ...p, [q.id]: e.target.value }))}><option value="">เลือก...</option>{q.options.map((opt) => <option key={opt} value={opt}>{opt}</option>)}</select>}
-                  {q.type === "scale" && <div className="flex items-center gap-3">{[1, 2, 3, 4, 5].map((n) => <label key={n}><input type="radio" name={`q_${q.id}`} value={n} onChange={(e) => setAnswers((p) => ({ ...p, [q.id]: e.target.value }))} /> {n}</label>)}</div>}
-                  {q.type === "date" && <input type="date" className="px-4 py-3 border-2 rounded-lg" onChange={(e) => setAnswers((p) => ({ ...p, [q.id]: e.target.value }))} />}
-                  {q.type === "time" && <input type="time" className="px-4 py-3 border-2 rounded-lg" onChange={(e) => setAnswers((p) => ({ ...p, [q.id]: e.target.value }))} />}
+                  {q.type === "dropdown" && <select className="w-full px-4 py-3 border-2 border-slate-300 dark:border-slate-600 dark:bg-slate-800 rounded-lg" onChange={(e) => setAnswers((p) => ({ ...p, [q.id]: e.target.value }))}><option value="">เลือก...</option>{q.options.map((opt) => <option key={opt} value={opt}>{opt}</option>)}</select>}
+                  {q.type === "scale" && <div className="flex items-center gap-3 text-slate-800 dark:text-slate-200">{[1, 2, 3, 4, 5].map((n) => <label key={n}><input type="radio" name={`q_${q.id}`} value={n} onChange={(e) => setAnswers((p) => ({ ...p, [q.id]: e.target.value }))} /> {n}</label>)}</div>}
+                  {q.type === "date" && <input type="date" className="px-4 py-3 border-2 border-slate-300 dark:border-slate-600 dark:bg-slate-800 rounded-lg" onChange={(e) => setAnswers((p) => ({ ...p, [q.id]: e.target.value }))} />}
+                  {q.type === "time" && <input type="time" className="px-4 py-3 border-2 border-slate-300 dark:border-slate-600 dark:bg-slate-800 rounded-lg" onChange={(e) => setAnswers((p) => ({ ...p, [q.id]: e.target.value }))} />}
                 </div>
               </div>
             ))}
@@ -319,13 +319,13 @@ export default function FormBuilder({ formId }: { formId: string }) {
       {showTypeModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowTypeModal(false)}>
           <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            <div className="p-6 border-b"><h3 className="text-lg font-semibold">เลือกประเภทคำถาม</h3></div>
+            <div className="p-6 border-b border-slate-200 dark:border-slate-700"><h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">เลือกประเภทคำถาม</h3></div>
             <div className="p-4 grid grid-cols-2 gap-3">
               {QUESTION_TYPES.map((t) => (
-                <button key={t.value} onClick={() => addQuestion(t.value)} className="p-4 rounded-xl hover:bg-purple-50 border text-left">{t.label}</button>
+                <button key={t.value} onClick={() => addQuestion(t.value)} className="p-4 rounded-xl hover:bg-purple-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-600 text-left">{t.label}</button>
               ))}
             </div>
-            <div className="p-4 border-t bg-gray-50"><button onClick={() => setShowTypeModal(false)} className="w-full py-2">ยกเลิก</button></div>
+            <div className="p-4 border-t border-slate-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800"><button onClick={() => setShowTypeModal(false)} className="w-full py-2 text-slate-700 dark:text-slate-200">ยกเลิก</button></div>
           </div>
         </div>
       )}
